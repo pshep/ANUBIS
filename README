@@ -1,0 +1,31 @@
+Installation instructions.
+
+Copy all the files/directories to your web shared directory in an anubis sub-
+directory.
+
+Anubis uses the PDO API to connect to databases, so this feature must be enabled
+in your PHP setup. Consult 
+http://php.net/manual/en/book.pdo.php
+on how to do this.
+
+Edit config.inc.php with the details of your database.
+These are the variables:
+
+$dbdatabase - name of data base to connect to.
+$dbusername - username to connect with.
+$dbpassword - password to connect with.
+$dbhost - host to connect to.
+
+To chose which type of database to connect to, set the following to '1' to
+select that database:
+
+$db_mysql.
+$db_sqlite.
+
+Currently MYSQL and SQLite databases are supported, but to add your own is not
+too difficult. Just need to edit anubis_db_connect() and add your specific 
+database connection routines. The following URL has a good tutorial on how to 
+do this:
+http://www.phpro.org/tutorials/Introduction-to-PHP-PDO.html
+
+
