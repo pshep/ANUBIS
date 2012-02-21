@@ -1,0 +1,21 @@
+Version 1.00 (07. January 2012) - Initial Release
+
+
+Version 1.01 (14. January 2012) - Bugfixes and Enhancements
+- Added possibility to define a port per host. No limitation
+  to standard-port 4028 anymore.
+
+- Fixed a bug where Disabled GPU's weren't noticed as
+  "not running" and therefore not display as "red".
+
+- Fixed a bug where stales where not displayed correctly. 
+ 
+
+Version 1.02 (17. January 2012) - Enhancements
+- Added Sum Column in Hostoverview
+
+- Added possibility to "Expand all hosts" as requested
+  in bitcoin forums.
+
+Version 1.03 (31. January 2012) - Bugfix Release
+- CGMiner 2.2.x broke my anubis, fixed bugs, works correctly now
