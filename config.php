@@ -1,114 +1,107 @@
 <?
 require("config.inc.php");
 
-$link = mysql_connect($dbhost, $dbusername, $dbpassword);
-if (!$link) {
-    die('FATAL: MySQL Connection failed ! ' . mysql_error());
-}
-$db_selected = mysql_select_db($dbdatabase, $link);
-if (!$db_selected) {
-    die ('FATAL: Cannot use Anubis_db !  ' . mysql_error());
-}
+$dbh = anubis_db_connect();
 
 if (isset($_POST['saveconf'])) {
 	$updstring = "";
 
 	if (isset($_POST['yellowtemp'])) {
-		$yellowtemp = mysql_real_escape_string($_POST['yellowtemp']);
-		$updstring = $updstring . " yellowtemp = '$yellowtemp', ";
+		$yellowtemp = $dbh->quote($_POST['yellowtemp']);
+		$updstring = $updstring . " yellowtemp = $yellowtemp, ";
 	}
 
 	if (isset($_POST['maxtemp'])) {
-		$maxtemp = mysql_real_escape_string($_POST['maxtemp']);
-		$updstring = $updstring . " maxtemp = '$maxtemp', ";
+		$maxtemp = $dbh->quote($_POST['maxtemp']);
+		$updstring = $updstring . " maxtemp = $maxtemp, ";
 	}
 
 	if (isset($_POST['yellowrejects'])) {
-		$yellowrejects = mysql_real_escape_string($_POST['yellowrejects']);
-		$updstring = $updstring . " yellowrejects = '$yellowrejects', ";
+		$yellowrejects = $dbh->quote($_POST['yellowrejects']);
+		$updstring = $updstring . " yellowrejects = $yellowrejects, ";
 	}
 
 	if (isset($_POST['maxrejects'])) {
-		$maxrejects = mysql_real_escape_string($_POST['maxrejects']);
-		$updstring = $updstring . " maxrejects = '$maxrejects', ";
+		$maxrejects = $dbh->quote($_POST['maxrejects']);
+		$updstring = $updstring . " maxrejects = $maxrejects, ";
 	}
 
 	if (isset($_POST['yellowdiscards'])) {
-		$yellowdiscards = mysql_real_escape_string($_POST['yellowdiscards']);
-		$updstring = $updstring . " yellowdiscards = '$yellowdiscards', ";
+		$yellowdiscards = $dbh->quote($_POST['yellowdiscards']);
+		$updstring = $updstring . " yellowdiscards = $yellowdiscards, ";
 	}
 
 	if (isset($_POST['maxdiscards'])) {
-		$maxdiscards = mysql_real_escape_string($_POST['maxdiscards']);
-		$updstring = $updstring . " maxdiscards = '$maxdiscards', ";
+		$maxdiscards = $dbh->quote($_POST['maxdiscards']);
+		$updstring = $updstring . " maxdiscards = $maxdiscards, ";
 	}
 
 	if (isset($_POST['yellowstales'])) {
-		$yellowstales = mysql_real_escape_string($_POST['yellowstales']);
-		$updstring = $updstring . " yellowstales = '$yellowstales', ";
+		$yellowstales = $dbh->quote($_POST['yellowstales']);
+		$updstring = $updstring . " yellowstales = $yellowstales, ";
 	}
 	
 	if (isset($_POST['maxstales'])) {
-		$maxstales = mysql_real_escape_string($_POST['maxstales']);
-		$updstring = $updstring . " maxstales = '$maxstales', ";
+		$maxstales = $dbh->quote($_POST['maxstales']);
+		$updstring = $updstring . " maxstales = $maxstales, ";
 	}
 
 	if (isset($_POST['yellowgetfails'])) {
-		$yellowgetfails = mysql_real_escape_string($_POST['yellowgetfails']);
-		$updstring = $updstring . " yellowgetfails = '$yellowgetfails', ";
+		$yellowgetfails = $dbh->quote($_POST['yellowgetfails']);
+		$updstring = $updstring . " yellowgetfails = $yellowgetfails, ";
 	}
 
 	if (isset($_POST['maxgetfails'])) {
-		$maxgetfails = mysql_real_escape_string($_POST['maxgetfails']);
-		$updstring = $updstring . " maxgetfails = '$maxgetfails', ";
+		$maxgetfails = $dbh->quote($_POST['maxgetfails']);
+		$updstring = $updstring . " maxgetfails = $maxgetfails, ";
 	}
 
 	if (isset($_POST['yellowremfails'])) {
-		$yellowremfails = mysql_real_escape_string($_POST['yellowremfails']);
-		$updstring = $updstring . " yellowremfails = '$yellowremfails', ";
+		$yellowremfails = $dbh->quote($_POST['yellowremfails']);
+		$updstring = $updstring . " yellowremfails = $yellowremfails, ";
 	}
 
 	if (isset($_POST['maxremfails'])) {
-		$maxremfails = mysql_real_escape_string($_POST['maxremfails']);
-		$updstring = $updstring . " maxremfails = '$maxremfails', ";
+		$maxremfails = $dbh->quote($_POST['maxremfails']);
+		$updstring = $updstring . " maxremfails = $maxremfails, ";
 	}
 
 	if (isset($_POST['yellowfan'])) {
-		$yellowfan = mysql_real_escape_string($_POST['yellowfan']);
-		$updstring = $updstring . " yellowfan = '$yellowfan', ";
+		$yellowfan = $dbh->quote($_POST['yellowfan']);
+		$updstring = $updstring . " yellowfan = $yellowfan, ";
 	}	
 
 	if (isset($_POST['maxfan'])) {
-		$maxfan = mysql_real_escape_string($_POST['maxfan']);
-		$updstring = $updstring . " maxfan = '$maxfan', ";
+		$maxfan = $dbh->quote($_POST['maxfan']);
+		$updstring = $updstring . " maxfan = $maxfan, ";
 	}
 
 	if (isset($_POST['yellowgessper'])) {
-		$yellowgessper = mysql_real_escape_string($_POST['yellowgessper']);
-		$updstring = $updstring . " yellowgessper = '$yellowgessper', ";
+		$yellowgessper = $dbh->quote($_POST['yellowgessper']);
+		$updstring = $updstring . " yellowgessper = $yellowgessper, ";
 	}
 
 	if (isset($_POST['maxgessper'])) {
-		$maxgessper = mysql_real_escape_string($_POST['maxgessper']);
-		$updstring = $updstring . " maxgessper = '$maxgessper', ";
+		$maxgessper = $dbh->quote($_POST['maxgessper']);
+		$updstring = $updstring . " maxgessper = $maxgessper, ";
 	}
 
 	if (isset($_POST['yellowavgmhper'])) {
-		$yellowavgmhper = mysql_real_escape_string($_POST['yellowavgmhper']);
-		$updstring = $updstring . " yellowavgmhper = '$yellowavgmhper', ";
+		$yellowavgmhper = $dbh->quote($_POST['yellowavgmhper']);
+		$updstring = $updstring . " yellowavgmhper = $yellowavgmhper, ";
 	}
 
 	if (isset($_POST['email'])) {
-		$email = mysql_real_escape_string($_POST['email']);
-		$updstring = $updstring . " email = '$email', ";
+		$email = $dbh->quote($_POST['email']);
+		$updstring = $updstring . " email = $email, ";
 	}
 		
 	$updstring = substr($updstring,0,-2);
 	
 	$updstring = "UPDATE configuration SET ".$updstring."";
-	$updcr = mysql_query($updstring);
+	$updcr = $dbh->query($updstring);
 	if (!$updcr) {
-    	die('FATAL: MySQL-Error: ' . mysql_error());
+    	die('FATAL: DB-Error: ' . db_error());
 	} else {
 		$updated = 1;
 	}	
@@ -117,13 +110,11 @@ if (isset($_POST['saveconf'])) {
 
 }
 
-$configq = mysql_query('SELECT * FROM configuration');
+$configq = $dbh->query('SELECT * FROM configuration');
 if (!$configq) {
-    die('FATAL: MySQL-Error: ' . mysql_error());
+    die('FATAL: DB-Error: ' . db_error());
 }
-$config = mysql_fetch_object($configq);
-
-
+$config = $configq->fetch(PDO::FETCH_OBJ);
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

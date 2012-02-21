@@ -1,24 +1,17 @@
 <?
 require("config.inc.php");
 
-$link = mysql_connect($dbhost, $dbusername, $dbpassword);
-if (!$link) {
-    die('FATAL: MySQL Connection failed ! ' . mysql_error());
-}
-$db_selected = mysql_select_db($dbdatabase, $link);
-if (!$db_selected) {
-    die ('FATAL: Cannot use Anubis_db !  ' . mysql_error());
-}
+$dbh = anubis_db_connect();
 
-$configq = mysql_query('SELECT * FROM configuration');
+$configq = $dbh->query('SELECT * FROM configuration');
 if (!$configq) {
-    die('FATAL: MySQL-Error: ' . mysql_error());
+    die('FATAL: DB-Error: ' . db_error());
 }
-$config = mysql_fetch_object($configq);
+$config = $configq->fetch(PDO::FETCH_OBJ);
 
-$result = mysql_query('SELECT name,address,id AS hostid FROM hosts');
+$result = $dbh->query('SELECT name,address,id AS hostid FROM hosts');
 if (!$result) {
-    die('FATAL: MySQL-Error: ' . mysql_error());
+    die('FATAL: DB-Error: ' . db_error());
 }
 
 

@@ -1,9 +1,77 @@
 <?
 
+$dbdatabase = "anubis_db";
+
+/* MYSQL specific defines */
 $dbusername = "anubis";
 $dbpassword = "h3rakles";
-$dbdatabase = "anubis_db";
 $dbhost = "localhost";
+/* End MYSQL specific defines */
 
-$version = "1.03";
+$version = "2.00";
+
+/* Set desired database interface to 1, others 0 */
+$db_mysql = "";
+$db_sqlite = "1";
+
+
+
+
+$auto_inc = "";
+$table_props = "";
+
+function anubis_db_connect()
+{
+  global $db_mysql, $db_sqlite, $dbhost, $dbusername, $dbpassword, $dbdatabase;
+  global $primary_key, $table_props, $show_tables;
+
+  if ($db_mysql)
+  {
+    try 
+    {
+      /*** connect to MySQL database ***/
+      $dbh = new PDO("mysql:host=".$dbhost.";dbname=".$dbdatabase, $dbusername, $dbpassword);
+    }
+    catch(PDOException $e)
+    {
+      die ('FATAL: Cannot use Anubis_db !  ' . $e->getMessage());
+    }
+
+    $primary_key = "int(3) NOT NULL AUTO_INCREMENT PRIMARY KEY";
+    $table_props = " ENGINE=MyISAM  DEFAULT CHARSET=latin1";
+    $show_tables = 'SHOW TABLES';
+
+  }
+  else if ($db_sqlite)
+  {
+    try 
+    {
+        /*** connect to SQLite database ***/
+        $dbh = new PDO("sqlite:".$dbdatabase);
+    }
+    catch(PDOException $e)
+    {
+        die ('FATAL: Cannot use Anubis_db !  ' . $e->getMessage());
+    }
+
+    $primary_key = "INTEGER PRIMARY KEY";
+    $show_tables = 'SELECT name FROM sqlite_master WHERE type = "table"';
+  }
+
+
+  $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
+
+  return $dbh;
+}
+
+function db_error()
+{
+  global $dbh;
+
+  $err_array = $dbh->errorInfo();
+
+  return $err_array[2];
+}
+
+
 ?>

@@ -21,22 +21,22 @@ CREATE TABLE IF NOT EXISTS `configuration` (
   `maxgessper` int(11) NOT NULL,
   `yellowavgmhper` int(11) NOT NULL,
   `maxavgmhper` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+)".$table_props.";
 ";
 
-$crr = mysql_query($tblstr);
+$crr = $dbh->query($tblstr);
 
 if (!$crr) {
-    die('FATAL: MySQL-Error: ' . mysql_error());
+    die('FATAL: create config error: ' . db_error());
 }
 
 $instblstr = "INSERT INTO `configuration` (`yellowtemp`, `yellowrejects`, `yellowdiscards`, `yellowstales`, `yellowgetfails`, `yellowremfails`, `maxtemp`, `maxrejects`, `maxdiscards`, `maxstales`, `maxgetfails`, `maxremfails`, `email`, `yellowfan`, `maxfan`, `yellowgessper`, `maxgessper`, `yellowavgmhper`, `maxavgmhper`) VALUES
-(80, 1, 7, 7, 1, 1, 84, 2, 10, 10, 2, 2, 'change@me.com', 85, 90, 95, 90, 95, 90);";
+(80, 1, 30, 7, 1, 1, 84, 2, 40, 10, 2, 2, 'change@me.com', 85, 90, 95, 90, 95, 90);";
 
-$cri = mysql_query($instblstr);
+$cri = $dbh->exec($instblstr);
 
 if (!$cri) {
-    die('FATAL: MySQL-Error: ' . mysql_error());
+    die('FATAL: DB-Error: ' . db_error());
 }
 
 ?>
