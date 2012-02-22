@@ -28,7 +28,7 @@ $data_totals = array('hosts'=>0,
 function get_config_data()
 {
   global $dbh;
-  $config_data = null;
+  $config = null;
 
   $result = $dbh->query("SELECT * FROM configuration");
   if ($result)
@@ -293,6 +293,58 @@ function process_host_devs($dev_data_array, &$activedevs, &$host5shash, &$maxtem
   return $devs;
 }
 
+
+/*****************************************************************************
+/*  Function:    process_host_info()
+/*  Description: processes the host information such as uptime, version etc.
+/*  Inputs:      host_data - the host data array
+/*  Outputs:     return - the table of info
+*****************************************************************************/
+function process_host_info($host_data)
+{
+    $arr = array ('command'=>'version','parameter'=>'');
+    $version_arr = send_request_to_host($arr, $host_data);
+
+    if ($version_arr != null)
+    {
+      $arr = array ('command'=>'config','parameter'=>'');
+      $config_arr = send_request_to_host($arr, $host_data);
+
+      $arr = array ('command'=>'summary','parameter'=>'');
+      $summary_arr = send_request_to_host($arr, $host_data);
+
+      $up_time = $summary_arr['SUMMARY']['0']['Elapsed'];
+      $days = floor($up_time / 86400);
+      $up_time -= $days * 86400;
+      $hours = floor($up_time / 3600);
+      $up_time -= $hours * 3600;
+      $mins = floor($up_time / 60);
+      $seconds = $up_time - ($mins * 60);
+
+      $output = "
+          <tr>
+            <th>CGminer version</th>
+            <th>API version</th>
+            <th>Up time</th>
+            <th>Found H/W</th>
+            <th>Using ADL</th>
+            <th>Pools and Strategy</th>
+          </tr>
+          <tr>
+            <td>".$version_arr['VERSION']['0']['CGMiner']."</td>
+            <td>".$version_arr['VERSION']['0']['API']."</td>
+            <td>".$days."d ".$hours."h ".$mins."m ".$seconds."s</td>
+            <td>".$config_arr['CONFIG']['0']['CPU Count']." CPUs, ".$config_arr['CONFIG']['0']['GPU Count']." GPUs, ".$config_arr['CONFIG']['0']['BFL Count']." BFLs</td>
+            <td>".$config_arr['CONFIG']['0']['ADL in use']."</td>
+            <td>".$config_arr['CONFIG']['0']['Pool Count']." pools, using ".$config_arr['CONFIG']['0']['Strategy']."</td>
+          </tr>";
+    }
+    else
+      $output = null;
+
+    return $output;
+}
+
 /*****************************************************************************
 /*  Function:    process_host_disp()
 /*  Description: processes the summary array of a host for html display
@@ -394,7 +446,7 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
 /*  Function:    get_host_status()
 /*  Description: gets the status of a host
 /*  Inputs:      host_data - the host data array.
-/*  Outputs:     return
+/*  Outputs:     return - Host summary in html
 *****************************************************************************/
 function get_host_status($host_data)
 {
@@ -413,10 +465,7 @@ function get_host_status($host_data)
     $arr = array ('command'=>'devs','parameter'=>'');
     $dev_arr = send_request_to_host($arr, $host_data);
 
-    if ($dev_arr != null)
-    {
-      $host_row = process_host_disp($desmhash, $summary_arr,  $dev_arr);
-    }
+    $host_row = process_host_disp($desmhash, $summary_arr,  $dev_arr);
   }
   else
   {
@@ -548,6 +597,8 @@ function process_dev_disp($gpu_data_array, $edit=false)
 *****************************************************************************/
 function process_devs_disp($host_data)
 {
+  global $id;
+
   $i = 0;
   $table = "";
 
@@ -556,6 +607,7 @@ function process_devs_disp($host_data)
 
   if ($devs_arr != null)
   {
+    $id = $host_data['id'];
     while (isset($devs_arr['DEVS'][$i]))
     {
       $table .= process_dev_disp($devs_arr['DEVS'][$i]);

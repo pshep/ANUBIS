@@ -116,7 +116,7 @@ ddsmoothmenu.init({
         
     </div> <!-- end of header -->
     
-    
+
     <div id="templatemo_main">
     	<div class="col_fw">
         	<div class="templatemo_megacontent">
@@ -125,6 +125,10 @@ ddsmoothmenu.init({
 <?
 if ($host_data)
 {
+  echo "<table id='rounded-corner' summary='HostInfo' width='100'>";
+  echo process_host_info($host_data);
+  echo "</table>";
+
   echo "<table id='rounded-corner' summary='HostSummary' align='center'>";
   echo create_host_header();
   echo get_host_status($host_data);
