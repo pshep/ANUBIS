@@ -86,6 +86,8 @@ if ($result)
 
 	while ($host_data = $result->fetch(PDO::FETCH_ASSOC))
 	{
+      $privileged = get_privileged_status($host_data);
+
       echo get_host_status($host_data);
 
       echo "<tr><td colspan='13'>";

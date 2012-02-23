@@ -142,6 +142,31 @@ function send_request_to_host($cmd_array, $host_data)
 }
 
 /*****************************************************************************
+/*  Function:    get_privileged_status()
+/*  Description: returns the privilege status of a specified host
+/*  Inputs:      host_data - host data array from database
+/*  Outputs:     return - true if we chan change values, false if not
+*****************************************************************************/
+function get_privileged_status($host_data)
+{
+  $arr = array ('command'=>'version','parameter'=>'');
+  $version_arr = send_request_to_host($arr, $host_data);
+
+  if ($version_arr['VERSION'][0]['API'] >= 1.2 )
+  {
+    $arr = array ('command'=>'privileged','parameter'=>'');
+    $response = send_request_to_host($arr, $host_data);
+
+    if ($response['STATUS'][0]['STATUS'] == 'S')
+      return true;
+  }
+  else 
+    return true;
+
+  return false;
+}
+
+/*****************************************************************************
 /*  Function:    set_color_high()
 /*  Description: Sets the color (Red/yellow/green) according to high number
 /*               is red, lowest is green
@@ -538,10 +563,11 @@ function process_dev_disp($gpu_data_array, $edit=false)
 {
   global $config;
   global $id;
+  global $privileged;
 
   /* show buttons if selected */
   $button = $gpu_data_array['Enabled'];
-  if($edit)
+  if($edit && $privileged)
   {
     if(($gpu_data_array['Enabled'] == "Y"))
     {
@@ -569,14 +595,23 @@ function process_dev_disp($gpu_data_array, $edit=false)
   $fanspeed = ($gpu_data_array['Fan Speed'] == '-1') ? '---' : $gpu_data_array['Fan Speed']; 
   $fanpercent = ($gpu_data_array['Fan Percent'] == '-1') ? '---' : $gpu_data_array['Fan Percent']. " %"; 
 
-  /* form row */
-  $row = " <tr>
-  <td>
-    <table border=0><tr>
+  /* format GPU number */
+  if ($privileged)
+  {
+    $GPU_cell =
+    "<table border=0><tr>
       <td><a href='editdev.php?id=".$id."&dev=".$gpu_data_array['GPU']."'><img src=\"images/edit.png\" border=0></a></td>
       <td><a href='editdev.php?id=".$id."&dev=".$gpu_data_array['GPU']."'>".$gpu_data_array['GPU']."</a></td></td>
-    </tr></table>
-  </td>
+    </tr></table>";
+  }
+  else
+  {
+    $GPU_cell = $gpu_data_array['GPU'];
+  }
+
+  /* form row */
+  $row = " <tr>
+  <td>".$GPU_cell."</td>
   <td $encol>".$button."</td>
   <td $alcol>".$gpu_data_array['Status']."</td>
   <td $tmpcol>".$gpu_data_array['Temperature']."</td>
@@ -655,7 +690,7 @@ function create_pool_header()
     <tr>
       <th scope='col' class='rounded-company'>Pool</th>
       <th scope='col' class='rounded-q1'>Priorty</th>
-      <th scope='col' class='rounded-q1'>URL</th>
+      <th scope='col' class='rounded-q1' colspan='2'>URL</th>
       <th scope='col' class='rounded-q1'>Gets</th>
       <th scope='col' class='rounded-q1'>Accepts</th>
       <th scope='col' class='rounded-q1'>Rejects</th>
@@ -690,6 +725,7 @@ function process_pool_disp($pool_data_array, $edit=false)
   $getfail =    $pool_data_array['Get Failures'];
   $remfail =    $pool_data_array['Remote Failures'];
 
+  /* set shares colours */
   if (isset($accepted) && $accepted !== 0)
   {
     $rejects = round(100 / $accepted * $rejected, 1) . " %";
@@ -705,19 +741,35 @@ function process_pool_disp($pool_data_array, $edit=false)
     $remfailscol = set_color_high($remfails, $config->yellowremfails, $config->maxremfails);  // Rem fails
   }
 
-  $alcol = ($pool_data_array['Status'] == "Alive") ? "class=green" : "class=red";
+  /* set pool colour */
+  if ($pool_data_array['Status'] == "Alive")
+    $alcol = "class=green";
+  else if ($pool_data_array['Status'] == "Disabled")
+    $alcol = "class=yellow";
+  else
+    $alcol = "class=red";
 
-  $button = "";
+  /* format buttons */
+  $top_button = "";
+  $start_stop_button = "";
   if($edit)
   {
     $disable_button = ($pool_data_array['Priority'] == '0') ? " disabled='disabled'" : "";
-    $button = " <button type='submit' name='top' value='".$pool_data_array['POOL']. "' " . $disable_button.">Top</button>";
+    $top_button = " <button type='submit' name='top' value='".$pool_data_array['POOL']. "' " . $disable_button.">Top</button>";
+    
+    if($pool_data_array['Status'] == "Alive")
+      $start_stop_button = " <button type='submit' name='stop' value='".$pool_data_array['POOL']."'>Stop</button>";
+    else if ($pool_data_array['Status'] == "Disabled")
+      $start_stop_button = " <button type='submit' name='start' value='".$pool_data_array['POOL']."'>Start</button>";
+    else
+      $start_stop_button = " <button disabled='disabled'>Start</button>";
   }
   
   $row = "<tr>
   <td>".$pool_data_array['POOL']."</td>
-  <td>".$pool_data_array['Priority'].$button."</td>
+  <td>".$pool_data_array['Priority'].$top_button."</td>
   <td $alcol>".$pool_data_array['URL']."</td>
+  <td $alcol>".$start_stop_button ."</td>
   <td>".$pool_data_array['Getworks']."</td>
   <td>".$pool_data_array['Accepted']."</td>
   <td $rejectscol>".$pool_data_array['Rejected']."<BR>".$rejects."</td>

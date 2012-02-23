@@ -44,14 +44,32 @@ if (!$id || $id == 0)
 
 if($host_data = get_host_data($id))
 {
-  if (isset($_POST['top']))
+  /* Determine if we can change values on this host */
+  if ($privileged = get_privileged_status($host_data))
   {
-    $arr = array ('command'=>'switchpool','parameter'=>$_POST['top']);
-    $temp = send_request_to_host($arr, $host_data);
-    sleep(2);
+    if (isset($_POST['top']))
+    {
+      $arr = array ('command'=>'switchpool','parameter'=>$_POST['top']);
+      send_request_to_host($arr, $host_data);
+      sleep(2);
+    }
+
+    if (isset($_POST['stop']))
+    {
+      $arr = array ('command'=>'disablepool','parameter'=>$_POST['stop']);
+      send_request_to_host($arr, $host_data);
+      sleep(2);
+    }
+
+    if (isset($_POST['start']))
+    {
+      $arr = array ('command'=>'enablepool','parameter'=>$_POST['start']);
+      send_request_to_host($arr, $host_data);
+      sleep(2);
+    }
   }
 }
-  
+
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -134,10 +152,10 @@ if ($host_data)
   echo get_host_status($host_data);
   echo "</table>";
 
-  echo "<form name=priority action='edithost.php?id=".$id."' method='post'>";
+  echo "<form name=pool action='edithost.php?id=".$id."' method='post'>";
   echo "<table id='rounded-corner' summary='PoolSummary' align='center'>";
   echo create_pool_header();
-  echo process_pools_disp($host_data, true);
+  echo process_pools_disp($host_data, $privileged);
   echo "</table>";
   echo "</form>";
 

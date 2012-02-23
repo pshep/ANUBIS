@@ -53,64 +53,69 @@ if($host_data = get_host_data($id))
 {
   if($gpu_data_array = get_dev_data($host_data, $dev))
   {
-    if (isset($_POST['start']))
+    /* Determine if we can change values on this host */
+    if ($privileged = get_privileged_status($host_data))
     {
-      $arr = array ('command'=>'gpuenable','parameter'=>$dev);
-      send_request_to_host($arr, $host_data);
-    }
-    
-    if (isset($_POST['stop']))
-    {
-      $arr = array ('command'=>'gpudisable','parameter'=>$dev);
-      send_request_to_host($arr, $host_data);
-    }
-  
-    if (isset($_POST['restart']))
-    {
-      $arr = array ('command'=>'gpurestart','parameter'=>$dev);
-      send_request_to_host($arr, $host_data);
-    }
-    
-    
-    if(isset($_POST['apply']))
-    {  
-      $gpuclk_get = $_POST['gpuclk_dro'];
-      if($gpu_data_array['GPU Clock'] != $gpuclk_get)
+      if (isset($_POST['start']))
       {
-        $arr = array ('command'=>'gpuengine','parameter'=>$dev.','.$gpuclk_get);
+        $arr = array ('command'=>'gpuenable','parameter'=>$dev);
+        send_request_to_host($arr, $host_data);
+      }
+
+      if (isset($_POST['stop']))
+      {
+        $arr = array ('command'=>'gpudisable','parameter'=>$dev);
+        send_request_to_host($arr, $host_data);
+      }
+    
+      if (isset($_POST['restart']))
+      {
+        $arr = array ('command'=>'gpurestart','parameter'=>$dev);
         send_request_to_host($arr, $host_data);
       }
       
-      $memclk_get = $_POST['memclk_dro'];
-      if($gpu_data_array['Memory Clock'] != $memclk_get)
-      {
-         $arr = array ('command'=>'gpumem','parameter'=>$dev.','.$memclk_get);
-         send_request_to_host($arr, $host_data);
+      
+      if(isset($_POST['apply']))
+      {  
+        $gpuclk_get = $_POST['gpuclk_dro'];
+        if($gpu_data_array['GPU Clock'] != $gpuclk_get)
+        {
+          $arr = array ('command'=>'gpuengine','parameter'=>$dev.','.$gpuclk_get);
+          send_request_to_host($arr, $host_data);
+        }
+        
+        $memclk_get = $_POST['memclk_dro'];
+        if($gpu_data_array['Memory Clock'] != $memclk_get)
+        {
+           $arr = array ('command'=>'gpumem','parameter'=>$dev.','.$memclk_get);
+           send_request_to_host($arr, $host_data);
+        }
+        
+        $gpuvolt_get = $_POST['gpuvolt_dro'];
+        if($gpu_data_array['GPU Voltage'] != $gpuvolt_get)
+        {
+           $arr = array ('command'=>'gpuvddc','parameter'=>$dev.','.$gpuvolt_get);
+           send_request_to_host($arr, $host_data);
+        }
+        
+        $gpufan_get = $_POST['gpufan_dro'];
+        if($gpu_data_array['Fan Percent'] != $gpufan_get)
+        {
+           $arr = array ('command'=>'gpufan','parameter'=>$dev.','.$gpufan_get);
+           send_request_to_host($arr, $host_data);
+        }
+    
+        $intensity_get = $_POST['intensity_dro'];
+        if($gpu_data_array['Intensity'] != $intensity_get)
+        {
+           $arr = array ('command'=>'gpuintensity','parameter'=>$dev.','.$intensity_get);
+           send_request_to_host($arr, $host_data);
+        }
       }
       
-      $gpuvolt_get = $_POST['gpuvolt_dro'];
-      if($gpu_data_array['GPU Voltage'] != $gpuvolt_get)
-      {
-         $arr = array ('command'=>'gpuvddc','parameter'=>$dev.','.$gpuvolt_get);
-         send_request_to_host($arr, $host_data);
-      }
-      
-      $gpufan_get = $_POST['gpufan_dro'];
-      if($gpu_data_array['Fan Percent'] != $gpufan_get)
-      {
-         $arr = array ('command'=>'gpufan','parameter'=>$dev.','.$gpufan_get);
-         send_request_to_host($arr, $host_data);
-      }
-  
-      $intensity_get = $_POST['intensity_dro'];
-      if($gpu_data_array['Intensity'] != $intensity_get)
-      {
-         $arr = array ('command'=>'gpuintensity','parameter'=>$dev.','.$intensity_get);
-         send_request_to_host($arr, $host_data);
-      }
+      sleep(2);
+      $gpu_data_array = get_dev_data($host_data, $dev);
     }
-    sleep(2);
-    $gpu_data_array = get_dev_data($host_data, $dev);
   }
 }
 
@@ -253,13 +258,14 @@ if ($host_data)
 
   echo "<table id='rounded-corner' summary='DevsSummary' align='center'>";
   echo create_devs_header();
-  
   echo "<form name='control' action='editdev.php?id=".$id."&dev=".$dev."' method='post'>";
-  echo process_dev_disp($gpu_data_array, true);
+  echo process_dev_disp($gpu_data_array, $privileged);
   echo "</form>";
   echo "</table>";
-?>
 
+  if ($privileged)
+  {
+?>
 <form name='apply' action='editdev.php?id=<?=$id?>&dev=<?=$dev?>' method='post'>
 <table id='rounded-corner' summary='DevsControl' align='center'>
 <thead>
@@ -316,11 +322,12 @@ if ($host_data)
 </thead>
 </table>
 </form>
-
-<?    
+<?
+  }
 }
-else {
-    echo "Host not found or you just deleted the host !<BR>";
+else 
+{
+  echo "Host not found or you just deleted the host !<BR>";
 }
 ?>
                 <div class="cleaner h20"></div>
