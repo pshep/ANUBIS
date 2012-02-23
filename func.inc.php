@@ -152,6 +152,10 @@ function send_request_to_host($cmd_array, $host_data)
 *****************************************************************************/
 function set_color_high($value, $yellow_limit, $red_limit)
 {
+    settype ($value , "float");
+    settype ($yellow_limit , "float");
+    settype ($red_limit , "float");
+
 	if ($value == -1)
 	  return null;
 	if ($value < $yellow_limit)
@@ -173,6 +177,10 @@ function set_color_high($value, $yellow_limit, $red_limit)
 *****************************************************************************/
 function set_color_low($value, $yellow_limit, $red_limit)
 {
+    settype ($value , "float");
+    settype ($yellow_limit , "float");
+    settype ($red_limit , "float");
+
 	if ($value == -1)
 	  return null;
 	if ($value <= $red_limit)
