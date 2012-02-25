@@ -23,6 +23,7 @@ $data_totals = array('hosts'=>0,
 
 $API_version = 0;
 $CGM_version = "0.0.0";
+$pools_in_use = array();
 
 /*****************************************************************************
 /*  Function:    get_config_data()
@@ -331,25 +332,32 @@ function create_host_header()
 *****************************************************************************/
 function process_host_devs($dev_data_array, &$activedevs, &$host5shash, &$maxtemp)
 {
+  global $pools_in_use;
+
   $devs = 0;
   $activedevs = 0;
   $host5shash = 0;
   $maxtemp = 0;
+  $pools_in_use = array();
 
   while(isset($dev_data_array['DEVS'][$devs]))
   {
+    /* Get 5 second has rate */
     $dev5shash = $dev_data_array['DEVS'][$devs]['MHS 5s'];
     $host5shash += $dev5shash;
 
+    /* Is device operating */
     if ($dev_data_array['DEVS'][$devs]['Status'] == "Alive" && $dev_data_array['DEVS'][$devs]['Enabled'] == "Y")
-    {
       $activedevs++;
-    }
-    $temp = $dev_data_array['DEVS'][$devs]['Temperature'];
 
+    /* Find higest temp */
+    $temp = $dev_data_array['DEVS'][$devs]['Temperature'];
     if ($maxtemp < $temp)
       $maxtemp = $temp;
-
+    
+    /* Find which pools are in use */
+    $pools_in_use[$dev_data_array['DEVS'][$devs]['Last Share Pool']] = true;
+    
     $devs++;
   }
 
@@ -739,6 +747,7 @@ function create_pool_header()
 function process_pool_disp($pool_data_array, $edit=false)
 {
   global $config;
+  global $pools_in_use;
 
   $fivesmhashcol = $avgmhpercol = $rejectscol = $discardscol = $stalescol = $getfailscol = $remfailscol = "";
   $rejects = $discards = $stales = $getfails = $remfails = '---';
@@ -765,6 +774,11 @@ function process_pool_disp($pool_data_array, $edit=false)
     $getfailscol = set_color_high($getfails, $config->yellowgetfails, $config->maxgetfails);  // Get fails
     $remfailscol = set_color_high($remfails, $config->yellowremfails, $config->maxremfails);  // Rem fails
   }
+  
+  /*Set in-use colour */
+  $poolcol = "";
+  if ($pools_in_use[$pool_data_array['POOL']] == true)
+    $poolcol = "class=green";
 
   /* set pool colour */
   if ($pool_data_array['Status'] == "Alive")
@@ -791,7 +805,7 @@ function process_pool_disp($pool_data_array, $edit=false)
   }
   
   $row = "<tr>
-  <td>".$pool_data_array['POOL']."</td>
+  <td $poolcol>".$pool_data_array['POOL']."</td>
   <td>".$pool_data_array['Priority'].$top_button."</td>
   <td $alcol>".$pool_data_array['URL']."</td>
   <td $alcol>".$start_stop_button ."</td>
