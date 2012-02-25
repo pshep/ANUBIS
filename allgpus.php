@@ -86,21 +86,24 @@ if ($result)
 
 	while ($host_data = $result->fetch(PDO::FETCH_ASSOC))
 	{
-      $privileged = get_privileged_status($host_data);
+      $host_alive = get_host_status($host_data);
 
-      echo get_host_status($host_data);
-
-      echo "<tr><td colspan='13'>";
-        echo "<table id='rounded-corner' summary='PoolSummary' align='center'>";
-        echo create_pool_header();
-        echo process_pools_disp($host_data);
-        echo "</table>";
-      
-        echo "<table id='rounded-corner' summary='DevsSummary' align='center'>";
-        echo create_devs_header();
-        echo process_devs_disp($host_data);
-        echo "</table>";
-      echo "</td></tr>";
+      echo get_host_summary($host_data);
+      if ($host_alive)
+      {
+        $privileged = get_privileged_status($host_data);
+        echo "<tr><td colspan='13'>";
+          echo "<table id='rounded-corner' summary='PoolSummary' align='center'>";
+          echo create_pool_header();
+          echo process_pools_disp($host_data);
+          echo "</table>";
+        
+          echo "<table id='rounded-corner' summary='DevsSummary' align='center'>";
+          echo create_devs_header();
+          echo process_devs_disp($host_data);
+          echo "</table>";
+        echo "</td></tr>";
+      }
     }
 
     echo create_totals();

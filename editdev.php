@@ -51,71 +51,76 @@ else
 
 if($host_data = get_host_data($id))
 {
-  if($gpu_data_array = get_dev_data($host_data, $dev))
+  if($host_alive = get_host_status($host_data))
   {
     /* Determine if we can change values on this host */
     if ($privileged = get_privileged_status($host_data))
     {
+      /* Process POST data - send any changes to host */
+      $value_changed = false;
       if (isset($_POST['start']))
       {
         $arr = array ('command'=>'gpuenable','parameter'=>$dev);
         send_request_to_host($arr, $host_data);
+        $value_changed = true;
       }
 
       if (isset($_POST['stop']))
       {
         $arr = array ('command'=>'gpudisable','parameter'=>$dev);
         send_request_to_host($arr, $host_data);
+        $value_changed = true;
       }
     
       if (isset($_POST['restart']))
       {
         $arr = array ('command'=>'gpurestart','parameter'=>$dev);
         send_request_to_host($arr, $host_data);
+        $value_changed = true;
       }
-      
-      
+
       if(isset($_POST['apply']))
-      {  
-        $gpuclk_get = $_POST['gpuclk_dro'];
-        if($gpu_data_array['GPU Clock'] != $gpuclk_get)
+      {
+        if(isset($_POST['gpuclk_chk']))
         {
-          $arr = array ('command'=>'gpuengine','parameter'=>$dev.','.$gpuclk_get);
+          $arr = array ('command'=>'gpuengine','parameter'=>$dev.','.$_POST['gpuclk_dro']);
           send_request_to_host($arr, $host_data);
+          $value_changed = true;
         }
         
-        $memclk_get = $_POST['memclk_dro'];
-        if($gpu_data_array['Memory Clock'] != $memclk_get)
+        if(isset($_POST['memclk_chk']))
         {
-           $arr = array ('command'=>'gpumem','parameter'=>$dev.','.$memclk_get);
-           send_request_to_host($arr, $host_data);
+          $arr = array ('command'=>'gpumem','parameter'=>$dev.','.$_POST['memclk_dro']);
+          send_request_to_host($arr, $host_data);
+          $value_changed = true;
         }
         
-        $gpuvolt_get = $_POST['gpuvolt_dro'];
-        if($gpu_data_array['GPU Voltage'] != $gpuvolt_get)
+        if(isset($_POST['gpuvolt_chk']))
         {
-           $arr = array ('command'=>'gpuvddc','parameter'=>$dev.','.$gpuvolt_get);
-           send_request_to_host($arr, $host_data);
+          $arr = array ('command'=>'gpuvddc','parameter'=>$dev.','.$_POST['gpuvolt_dro']);
+          send_request_to_host($arr, $host_data);
+          $value_changed = true;
         }
         
-        $gpufan_get = $_POST['gpufan_dro'];
-        if($gpu_data_array['Fan Percent'] != $gpufan_get)
+        if(isset($_POST['gpufan_chk']))
         {
-           $arr = array ('command'=>'gpufan','parameter'=>$dev.','.$gpufan_get);
-           send_request_to_host($arr, $host_data);
+          $arr = array ('command'=>'gpufan','parameter'=>$dev.','.$_POST['gpufan_dro']);
+          send_request_to_host($arr, $host_data);
+          $value_changed = true;
         }
     
-        $intensity_get = $_POST['intensity_dro'];
-        if($gpu_data_array['Intensity'] != $intensity_get)
+        if(isset($_POST['intensity_chk']))
         {
-           $arr = array ('command'=>'gpuintensity','parameter'=>$dev.','.$intensity_get);
-           send_request_to_host($arr, $host_data);
+          $arr = array ('command'=>'gpuintensity','parameter'=>$dev.','.$_POST['intensity_dro']);
+          send_request_to_host($arr, $host_data);
+          $value_changed = true;
         }
       }
-      
-      sleep(2);
-      $gpu_data_array = get_dev_data($host_data, $dev);
+      /* wait a couple of seconds if a change occured */
+      if ($value_changed)
+        sleep(2);
     }
+    $gpu_data_array = get_dev_data($host_data, $dev);
   }
 }
 
@@ -161,7 +166,11 @@ $(function()
     min: 100,
     max: 1500,
     step: 5,
-    slide: function( event, ui ) {$( "#gpuclk_dro" ).val(ui.value );},
+    slide: function( event, ui ) 
+    {
+      $( "#gpuclk_dro" ).val(ui.value );
+      $( "#gpuclk_chk" ).each(function(){ this.checked = true; });
+    },
   });
   $( "#gpuclk_dro" ).val($( "#gpuclk_slider" ).slider( "value" ) );
   
@@ -170,7 +179,11 @@ $(function()
     min: 100,
     max: 1500,
     step: 5,
-    slide: function( event, ui ) {$( "#memclk_dro" ).val(ui.value );},
+    slide: function( event, ui ) 
+    {
+      $( "#memclk_dro" ).val(ui.value );
+      $( "#memclk_chk" ).each(function(){ this.checked = true; });
+    },
   });
   $( "#memclk_dro" ).val($( "#memclk_slider" ).slider( "value" ) );
   
@@ -179,7 +192,11 @@ $(function()
     min: 0.5,
     max: 1.5,
     step: 0.01,
-    slide: function( event, ui ) {$( "#gpuvolt_dro" ).val(ui.value );},
+    slide: function( event, ui ) 
+    {
+      $( "#gpuvolt_dro" ).val(ui.value );
+      $( "#gpuvolt_chk" ).each(function(){ this.checked = true; });
+    },
   });
   $( "#gpuvolt_dro" ).val($( "#gpuvolt_slider" ).slider( "value" ) );
   
@@ -188,7 +205,11 @@ $(function()
     min: 0,
     max: 100,
     step: 1,
-    slide: function( event, ui ) {$( "#gpufan_dro" ).val(ui.value );},
+    slide: function( event, ui ) 
+    {
+      $( "#gpufan_dro" ).val(ui.value );
+      $( "#gpufan_chk" ).each(function(){ this.checked = true; });
+    },
   });
   $( "#gpufan_dro" ).val($( "#gpufan_slider" ).slider( "value" ) );
   
@@ -204,6 +225,7 @@ $(function()
     slide: function( event, ui )
     {
       $( "#intensity_dro" ).val(ui.value );
+      $( "#intensity_chk" ).each(function(){ this.checked = true; });
       if ($( "#intensity_dro" ).val() == -1){$( "#intensity_dro" ).val("D");}
     }
   });
@@ -253,16 +275,17 @@ if ($host_data)
 {
   echo "<table id='rounded-corner' summary='HostSummary' align='center'>";
   echo create_host_header();
-  echo get_host_status($host_data);
+  echo get_host_summary($host_data);
   echo "</table>";
-
-  echo "<table id='rounded-corner' summary='DevsSummary' align='center'>";
-  echo create_devs_header();
-  echo "<form name='control' action='editdev.php?id=".$id."&dev=".$dev."' method='post'>";
-  echo process_dev_disp($gpu_data_array, $privileged);
-  echo "</form>";
-  echo "</table>";
-
+  if ($host_alive)
+  {
+    echo "<table id='rounded-corner' summary='DevsSummary' align='center'>";
+    echo create_devs_header();
+    echo "<form name='control' action='editdev.php?id=".$id."&dev=".$dev."' method='post'>";
+    echo process_dev_disp($gpu_data_array, $privileged);
+    echo "</form>";
+    echo "</table>";
+  }
   if ($privileged)
   {
 ?>
@@ -270,18 +293,21 @@ if ($host_data)
 <table id='rounded-corner' summary='DevsControl' align='center'>
 <thead>
     <tr>
-        <th colspan='3' scope='col' class='rounded-q1'> Edit settings below for device <?=$dev?> on <?=$host_data['name']?></th>
+      <th width='20' scope='col' class='rounded-q1'>Set</th>
+      <th colspan='3' scope='col' class='rounded-q1'> Edit settings below for device <?=$dev?> on <?=$host_data['name']?></th>
     </tr>
 </thead>
 <tr>
-  <td>100</td>
+  <td width='20' rowspan="2"><input type="checkbox" name="gpuclk_chk"  id="gpuclk_chk" value="1"/></td>
+  <td width='20'>100</td>
   <td align='center'>Set GPU Clock Speed: <input type="text" name="gpuclk_dro"  id="gpuclk_dro" style="border:0; font-weight:bold;" size="3" /> MHz</td>
-  <td>1500</td>
+  <td width='20'>1500</td>
 </tr>
 <tr>
   <td colspan='3'><div id="gpuclk_slider"></div></td>
 </tr>
 <tr>
+  <td width='20' rowspan="2"><input type="checkbox" name="memclk_chk"  id="memclk_chk" value="1"/></td>
   <td>100</td>
   <td align='center'>Set Memory Clock Speed: <input type="text" name="memclk_dro" id="memclk_dro" style="border:0; font-weight:bold;" size="3" /> MHz</td>
   <td>1500</td>
@@ -290,6 +316,7 @@ if ($host_data)
   <td colspan='3'><div id="memclk_slider"></div></td>
 </tr>
 <tr>
+  <td width='20' rowspan="2"><input type="checkbox" name="gpuvolt_chk"  id="gpuvolt_chk" value="1"/></td>
   <td>0.50</td>
   <td align='center'>Set GPU Voltage: <input type="text" name="gpuvolt_dro" id="gpuvolt_dro" style="border:0;  font-weight:bold;" size="3" /> V</td>
   <td>1.50</td>
@@ -298,6 +325,7 @@ if ($host_data)
   <td colspan='3'><div id="gpuvolt_slider"></div></td>
 </tr>
 <tr>
+  <td width='20' rowspan="2"><input type="checkbox" name="gpufan_chk"  id="gpufan_chk" value="1"/></td>
   <td>0</td>
   <td align='center'>Set Fan Speed: <input type="text" name="gpufan_dro" id="gpufan_dro" style="border:0; font-weight:bold;" size="3" /> %</td>
   <td>100</td>
@@ -306,6 +334,7 @@ if ($host_data)
   <td colspan='3'><div id="gpufan_slider"></div></td>
 </tr>
 <tr>
+  <td width='20' rowspan="2"><input type="checkbox" name="intensity_chk"  id="intensity_chk" value="1"/></td>
   <td>D</td>
   <td align='center'>Set Intensity: <input type="text" name="intensity_dro" id="intensity_dro" style="border:0; font-weight:bold;" size="3" /></td>
   <td>15</td>
@@ -315,7 +344,7 @@ if ($host_data)
 </tr>
 <thead>
   <tr>
-    <th colspan='3' scope='col' class='rounded-q1'>
+    <th colspan='4' scope='col' class='rounded-q1'>
         <input type='submit' value='Apply Settings' name='apply'><br>
     </th>
   </tr>

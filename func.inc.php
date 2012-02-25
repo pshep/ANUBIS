@@ -3,8 +3,11 @@ error_reporting('E_ALL');
 ini_set('display_errors','On'); 
 
 // Globals
+$host_data = null;
+$host_alive = false;
+$privileged = false;
 $data_totals = array('hosts'=>0,
-                     'devs'=>0, 
+                     'devs'=>0,
                      'activedevs'=>0,
                      'maxtemp'=>0, 
                      'desmhash'=>0,
@@ -15,9 +18,11 @@ $data_totals = array('hosts'=>0,
                      'rejects'=>0, 
                      'discards'=>0,
                      'stales'=>0, 
-                     'getfails'=>0, 
+                     'getfails'=>0,
                      'remfails'=>0);
 
+$API_version = 0;
+$CGM_version = "0.0.0";
 
 /*****************************************************************************
 /*  Function:    get_config_data()
@@ -93,17 +98,14 @@ function readsockline($socket)
   $line = '';
   while (true)
   {
-    $byte = socket_read($socket, 1);
-    if ($byte === false || $byte === '')
+    $byte = socket_read($socket, 1024);
+    if ($byte == '')
        break;
-    if ($byte === "\0")
-       break;
-
     $line .= $byte;
   }
-  return $line;
-}
 
+  return trim($line);
+}
 
 /*****************************************************************************
 /*  Function:    send_request_to_host()
@@ -125,13 +127,12 @@ function send_request_to_host($cmd_array, $host_data)
     socket_close($socket);
 
     if (strlen($line) == 0)
-    {
-      // echo "WARN: '$cmd' to $host returned nothing\n";
       return null;
-    }
 
     if (substr($line,0,1) == '{')
-        $data = json_decode($line, true);
+      $data = json_decode($line, true);
+    else
+      return null;
   }
   else
   {
@@ -141,18 +142,47 @@ function send_request_to_host($cmd_array, $host_data)
   return $data;
 }
 
+
+/*****************************************************************************
+/*  Function:    get_host_status()
+/*  Description: returns the status of a specified host
+/*  Inputs:      host_data - host data array from database
+/*  Outputs:     return - true if host cgminer is talking, false if not
+*****************************************************************************/
+function get_host_status($host_data)
+{
+  global $API_version;
+  global $CGM_version;
+
+  $arr = array ('command'=>'version','parameter'=>'');
+  $version_arr = send_request_to_host($arr, $host_data);
+
+  if ($version_arr)
+  {
+    if ($version_arr['STATUS'][0]['STATUS'] == 'S')
+    {
+      $API_version = $version_arr['VERSION'][0]['API'];
+      $CGM_version = $version_arr['VERSION'][0]['CGMiner'];
+      
+      if ($API_version >= 1.0)
+        return true;
+    }
+  }
+  return false;
+}
+
 /*****************************************************************************
 /*  Function:    get_privileged_status()
 /*  Description: returns the privilege status of a specified host
 /*  Inputs:      host_data - host data array from database
-/*  Outputs:     return - true if we chan change values, false if not
+/*  Outputs:     return - true if we can change values, false if not
 *****************************************************************************/
 function get_privileged_status($host_data)
 {
-  $arr = array ('command'=>'version','parameter'=>'');
-  $version_arr = send_request_to_host($arr, $host_data);
+  global $API_version;
+  global $CGM_version;
 
-  if ($version_arr['VERSION'][0]['API'] >= 1.2 )
+  if ($API_version >= 1.2 )
   {
     $arr = array ('command'=>'privileged','parameter'=>'');
     $response = send_request_to_host($arr, $host_data);
@@ -335,47 +365,42 @@ function process_host_devs($dev_data_array, &$activedevs, &$host5shash, &$maxtem
 *****************************************************************************/
 function process_host_info($host_data)
 {
-    $arr = array ('command'=>'version','parameter'=>'');
-    $version_arr = send_request_to_host($arr, $host_data);
+  global $API_version;
+  global $CGM_version;
 
-    if ($version_arr != null)
-    {
-      $arr = array ('command'=>'config','parameter'=>'');
-      $config_arr = send_request_to_host($arr, $host_data);
+  $arr = array ('command'=>'config','parameter'=>'');
+  $config_arr = send_request_to_host($arr, $host_data);
+  
+  $arr = array ('command'=>'summary','parameter'=>'');
+  $summary_arr = send_request_to_host($arr, $host_data);
+  
+  $up_time = $summary_arr['SUMMARY']['0']['Elapsed'];
+  $days = floor($up_time / 86400);
+  $up_time -= $days * 86400;
+  $hours = floor($up_time / 3600);
+  $up_time -= $hours * 3600;
+  $mins = floor($up_time / 60);
+  $seconds = $up_time - ($mins * 60);
+  
+  $output = "
+      <tr>
+        <th>CGminer version</th>
+        <th>API version</th>
+        <th>Up time</th>
+        <th>Found H/W</th>
+        <th>Using ADL</th>
+        <th>Pools and Strategy</th>
+      </tr>
+      <tr>
+        <td>".$CGM_version."</td>
+        <td>".$API_version."</td>
+        <td>".$days."d ".$hours."h ".$mins."m ".$seconds."s</td>
+        <td>".$config_arr['CONFIG']['0']['CPU Count']." CPUs, ".$config_arr['CONFIG']['0']['GPU Count']." GPUs, ".$config_arr['CONFIG']['0']['BFL Count']." BFLs</td>
+        <td>".$config_arr['CONFIG']['0']['ADL in use']."</td>
+        <td>".$config_arr['CONFIG']['0']['Pool Count']." pools, using ".$config_arr['CONFIG']['0']['Strategy']."</td>
+      </tr>";
 
-      $arr = array ('command'=>'summary','parameter'=>'');
-      $summary_arr = send_request_to_host($arr, $host_data);
-
-      $up_time = $summary_arr['SUMMARY']['0']['Elapsed'];
-      $days = floor($up_time / 86400);
-      $up_time -= $days * 86400;
-      $hours = floor($up_time / 3600);
-      $up_time -= $hours * 3600;
-      $mins = floor($up_time / 60);
-      $seconds = $up_time - ($mins * 60);
-
-      $output = "
-          <tr>
-            <th>CGminer version</th>
-            <th>API version</th>
-            <th>Up time</th>
-            <th>Found H/W</th>
-            <th>Using ADL</th>
-            <th>Pools and Strategy</th>
-          </tr>
-          <tr>
-            <td>".$version_arr['VERSION']['0']['CGMiner']."</td>
-            <td>".$version_arr['VERSION']['0']['API']."</td>
-            <td>".$days."d ".$hours."h ".$mins."m ".$seconds."s</td>
-            <td>".$config_arr['CONFIG']['0']['CPU Count']." CPUs, ".$config_arr['CONFIG']['0']['GPU Count']." GPUs, ".$config_arr['CONFIG']['0']['BFL Count']." BFLs</td>
-            <td>".$config_arr['CONFIG']['0']['ADL in use']."</td>
-            <td>".$config_arr['CONFIG']['0']['Pool Count']." pools, using ".$config_arr['CONFIG']['0']['Strategy']."</td>
-          </tr>";
-    }
-    else
-      $output = null;
-
-    return $output;
+  return $output;
 }
 
 /*****************************************************************************
@@ -476,12 +501,12 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
 }
 
 /*****************************************************************************
-/*  Function:    get_host_status()
-/*  Description: gets the status of a host
+/*  Function:    get_host_summary()
+/*  Description: gets the summary of a host
 /*  Inputs:      host_data - the host data array.
 /*  Outputs:     return - Host summary in html
 *****************************************************************************/
-function get_host_status($host_data)
+function get_host_summary($host_data)
 {
   $hostid = $host_data['id'];
   $name = $host_data['name'];
@@ -689,7 +714,7 @@ function create_pool_header()
     "<thead>
     <tr>
       <th scope='col' class='rounded-company'>Pool</th>
-      <th scope='col' class='rounded-q1'>Priorty</th>
+      <th scope='col' class='rounded-q1'>Priority</th>
       <th scope='col' class='rounded-q1' colspan='2'>URL</th>
       <th scope='col' class='rounded-q1'>Gets</th>
       <th scope='col' class='rounded-q1'>Accepts</th>

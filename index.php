@@ -110,7 +110,7 @@ if ($result)
 
     echo create_host_header();
 	while ($host_data = $result->fetch(PDO::FETCH_ASSOC))
-        echo get_host_status($host_data);
+        echo get_host_summary($host_data);
     echo create_totals();
 
 	echo "</table>";

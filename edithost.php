@@ -44,28 +44,33 @@ if (!$id || $id == 0)
 
 if($host_data = get_host_data($id))
 {
-  /* Determine if we can change values on this host */
-  if ($privileged = get_privileged_status($host_data))
+  if($host_alive = get_host_status($host_data))
   {
-    if (isset($_POST['top']))
+    /* Determine if we can change values on this host */
+    $privileged = get_privileged_status($host_data);
+  
+    if ($privileged)
     {
-      $arr = array ('command'=>'switchpool','parameter'=>$_POST['top']);
-      send_request_to_host($arr, $host_data);
-      sleep(2);
-    }
-
-    if (isset($_POST['stop']))
-    {
-      $arr = array ('command'=>'disablepool','parameter'=>$_POST['stop']);
-      send_request_to_host($arr, $host_data);
-      sleep(2);
-    }
-
-    if (isset($_POST['start']))
-    {
-      $arr = array ('command'=>'enablepool','parameter'=>$_POST['start']);
-      send_request_to_host($arr, $host_data);
-      sleep(2);
+      if (isset($_POST['top']))
+      {
+        $arr = array ('command'=>'switchpool','parameter'=>$_POST['top']);
+        send_request_to_host($arr, $host_data);
+        sleep(2);
+      }
+  
+      if (isset($_POST['stop']))
+      {
+        $arr = array ('command'=>'disablepool','parameter'=>$_POST['stop']);
+        send_request_to_host($arr, $host_data);
+        sleep(2);
+      }
+  
+      if (isset($_POST['start']))
+      {
+        $arr = array ('command'=>'enablepool','parameter'=>$_POST['start']);
+        send_request_to_host($arr, $host_data);
+        sleep(2);
+      }
     }
   }
 }
@@ -143,26 +148,32 @@ ddsmoothmenu.init({
 <?
 if ($host_data)
 {
-  echo "<table id='rounded-corner' summary='HostInfo' width='100'>";
-  echo process_host_info($host_data);
-  echo "</table>";
+  if ($host_alive)
+  {
+    echo "<table id='rounded-corner' summary='HostInfo' width='100'>";
+    echo process_host_info($host_data);
+    echo "</table>";
+  }
 
   echo "<table id='rounded-corner' summary='HostSummary' align='center'>";
   echo create_host_header();
-  echo get_host_status($host_data);
+  echo get_host_summary($host_data);
   echo "</table>";
 
-  echo "<form name=pool action='edithost.php?id=".$id."' method='post'>";
-  echo "<table id='rounded-corner' summary='PoolSummary' align='center'>";
-  echo create_pool_header();
-  echo process_pools_disp($host_data, $privileged);
-  echo "</table>";
-  echo "</form>";
-
-  echo "<table id='rounded-corner' summary='DevsSummary' align='center'>";
-  echo create_devs_header();
-  echo process_devs_disp($host_data);
-  echo "</table>";
+  if ($host_alive)
+  {
+    echo "<form name=pool action='edithost.php?id=".$id."' method='post'>";
+    echo "<table id='rounded-corner' summary='PoolSummary' align='center'>";
+    echo create_pool_header();
+    echo process_pools_disp($host_data, $privileged);
+    echo "</table>";
+    echo "</form>";
+  
+    echo "<table id='rounded-corner' summary='DevsSummary' align='center'>";
+    echo create_devs_header();
+    echo process_devs_disp($host_data);
+    echo "</table>";
+  }
 ?>
 
 <form name=save action="edithost.php?id=<?=$id?>" method="post">
