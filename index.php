@@ -103,7 +103,7 @@ ddsmoothmenu.init({
 <?
 
 
-$result = $dbh->query("SELECT * FROM hosts");
+$result = $dbh->query("SELECT * FROM hosts ORDER BY name ASC");
 if ($result)
 {
     echo "<table id='rounded-corner' summary='Hostsummary'>";
