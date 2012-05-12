@@ -92,7 +92,7 @@ if ($result)
       if ($host_alive)
       {
         $privileged = get_privileged_status($host_data);
-        echo "<tr><td colspan='13'>";
+        echo "<tr><td colspan='14'>";
           echo "<table id='rounded-corner' summary='PoolSummary' align='center'>";
           echo create_pool_header();
           echo process_pools_disp($host_data);

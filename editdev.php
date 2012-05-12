@@ -45,82 +45,114 @@ if (isset($_GET['dev']))
   $dev = 0 + $_GET['dev'];
 else
 {
-    echo "Need a Device to deal with !";
+    echo "Need a device number to deal with !";
     die;
 }
+
+if (isset($_GET['type']))
+  $type = $_GET['type'];
+else
+{
+    echo "Need a device type to deal with !";
+    die;
+}
+
 
 if($host_data = get_host_data($id))
 {
   if($host_alive = get_host_status($host_data))
   {
     /* Determine if we can change values on this host */
-    if ($privileged = get_privileged_status($host_data))
+    $privileged = (get_privileged_status($host_data) && ($type != 'CPU'));
+
+    if ($privileged)
     {
       /* Process POST data - send any changes to host */
       $value_changed = false;
-      if (isset($_POST['start']))
+      
+      if ($type == 'PGA')
       {
-        $arr = array ('command'=>'gpuenable','parameter'=>$dev);
-        send_request_to_host($arr, $host_data);
-        $value_changed = true;
+        if (isset($_POST['start']))
+        {
+          $arr = array ('command'=>'pgaenable','parameter'=>$dev);
+          $dev_response = send_request_to_host($arr, $host_data);
+          $value_changed = true;
+        }
+  
+        if (isset($_POST['stop']))
+        {
+          $arr = array ('command'=>'pgadisable','parameter'=>$dev);
+          $dev_response = send_request_to_host($arr, $host_data);
+          $value_changed = true;
+        }
       }
 
-      if (isset($_POST['stop']))
+      if ($type == 'GPU')
       {
-        $arr = array ('command'=>'gpudisable','parameter'=>$dev);
-        send_request_to_host($arr, $host_data);
-        $value_changed = true;
-      }
-    
-      if (isset($_POST['restart']))
-      {
-        $arr = array ('command'=>'gpurestart','parameter'=>$dev);
-        send_request_to_host($arr, $host_data);
-        $value_changed = true;
-      }
-
-      if(isset($_POST['apply']))
-      {
-        if(isset($_POST['gpuclk_chk']))
+        if (isset($_POST['start']))
         {
-          $arr = array ('command'=>'gpuengine','parameter'=>$dev.','.$_POST['gpuclk_dro']);
-          send_request_to_host($arr, $host_data);
+          $arr = array ('command'=>'gpuenable','parameter'=>$dev);
+          $dev_response = send_request_to_host($arr, $host_data);
           $value_changed = true;
         }
-        
-        if(isset($_POST['memclk_chk']))
+  
+        if (isset($_POST['stop']))
         {
-          $arr = array ('command'=>'gpumem','parameter'=>$dev.','.$_POST['memclk_dro']);
-          send_request_to_host($arr, $host_data);
+          $arr = array ('command'=>'gpudisable','parameter'=>$dev);
+          $dev_response = send_request_to_host($arr, $host_data);
           $value_changed = true;
         }
-        
-        if(isset($_POST['gpuvolt_chk']))
+      
+        if (isset($_POST['restart']))
         {
-          $arr = array ('command'=>'gpuvddc','parameter'=>$dev.','.$_POST['gpuvolt_dro']);
-          send_request_to_host($arr, $host_data);
+          $arr = array ('command'=>'gpurestart','parameter'=>$dev);
+          $dev_response = send_request_to_host($arr, $host_data);
           $value_changed = true;
         }
-        
-        if(isset($_POST['gpufan_chk']))
+  
+        if(isset($_POST['apply']))
         {
-          $arr = array ('command'=>'gpufan','parameter'=>$dev.','.$_POST['gpufan_dro']);
-          send_request_to_host($arr, $host_data);
-          $value_changed = true;
-        }
-    
-        if(isset($_POST['intensity_chk']))
-        {
-          $arr = array ('command'=>'gpuintensity','parameter'=>$dev.','.$_POST['intensity_dro']);
-          send_request_to_host($arr, $host_data);
-          $value_changed = true;
+          if(isset($_POST['gpuclk_chk']))
+          {
+            $arr = array ('command'=>'gpuengine','parameter'=>$dev.','.$_POST['gpuclk_dro']);
+            $gpu_response[0] = send_request_to_host($arr, $host_data);
+            $value_changed = true;
+          }
+          
+          if(isset($_POST['memclk_chk']))
+          {
+            $arr = array ('command'=>'gpumem','parameter'=>$dev.','.$_POST['memclk_dro']);
+            $gpu_response[1] = send_request_to_host($arr, $host_data);
+            $value_changed = true;
+          }
+          
+          if(isset($_POST['gpuvolt_chk']))
+          {
+            $arr = array ('command'=>'gpuvddc','parameter'=>$dev.','.$_POST['gpuvolt_dro']);
+            $gpu_response[2] = send_request_to_host($arr, $host_data);
+            $value_changed = true;
+          }
+          
+          if(isset($_POST['gpufan_chk']))
+          {
+            $arr = array ('command'=>'gpufan','parameter'=>$dev.','.$_POST['gpufan_dro']);
+            $gpu_response[3] = send_request_to_host($arr, $host_data);
+            $value_changed = true;
+          }
+      
+          if(isset($_POST['intensity_chk']))
+          {
+            $arr = array ('command'=>'gpuintensity','parameter'=>$dev.','.$_POST['intensity_dro']);
+            $gpu_response[4] = send_request_to_host($arr, $host_data);
+            $value_changed = true;
+          }
         }
       }
       /* wait a couple of seconds if a change occured */
       if ($value_changed)
         sleep(2);
     }
-    $gpu_data_array = get_dev_data($host_data, $dev);
+    $gpu_data_array = get_dev_data($host_data, $dev, $type);
   }
 }
 
@@ -279,22 +311,41 @@ if ($host_data)
   echo "</table>";
   if ($host_alive)
   {
+    echo "<form name='control' action='editdev.php?id=".$id."&dev=".$dev."&type=".$type."' method='post'>";
     echo "<table id='rounded-corner' summary='DevsSummary' align='center'>";
     echo create_devs_header();
-    echo "<form name='control' action='editdev.php?id=".$id."&dev=".$dev."' method='post'>";
     echo process_dev_disp($gpu_data_array, $privileged);
-    echo "</form>";
+
+    if (isset($dev_response))
+    {
+      if ($dev_response['STATUS'][0]['STATUS'] == 'S')
+        $dev_message = "Action successful: ";
+      else if ($dev_response['STATUS'][0]['STATUS'] == 'I')
+         $dev_message = "Action info: ";
+      else if ($dev_response['STATUS'][0]['STATUS'] == 'W')
+         $dev_message = "Action warning: ";
+      else
+         $dev_message = "Action error: ";
+
+      echo "<thead><tr>
+              <th colspan='16'  scope='col' class='rounded-company'>"
+                . $dev_message . $dev_response['STATUS'][0]['Msg'].
+             "</th>
+            </tr></thead>";
+    }
     echo "</table>";
+    echo "</form>";
   }
-  if ($privileged)
+  
+  if ($privileged && ($type == 'GPU'))
   {
 ?>
-<form name='apply' action='editdev.php?id=<?=$id?>&dev=<?=$dev?>' method='post'>
+<form name='apply' action='editdev.php?id=<?=$id?>&dev=<?=$dev?>&type=<?=$type?>' method='post'>
 <table id='rounded-corner' summary='DevsControl' align='center'>
 <thead>
     <tr>
       <th width='20' scope='col' class='rounded-q1'>Set</th>
-      <th colspan='3' scope='col' class='rounded-q1'> Edit settings below for device <?=$dev?> on <?=$host_data['name']?></th>
+      <th colspan='3' scope='col' class='rounded-q1'> Edit settings below for <?=$type?> <?=$dev?> on <?=$host_data['name']?></th>
     </tr>
 </thead>
 <tr>
@@ -348,6 +399,30 @@ if ($host_data)
         <input type='submit' value='Apply Settings' name='apply'><br>
     </th>
   </tr>
+<?
+    if (isset($_POST['apply']))
+    {
+      for ($i=0; $i<5; $i++)
+      {
+        if (isset($gpu_response[$i]))
+        {
+          if ($gpu_response[$i]['STATUS'][0]['STATUS'] == 'S')
+            $dev_message = "Action successful: ";
+          else if ($gpu_response[$i]['STATUS'][0]['STATUS'] == 'I')
+             $dev_message = "Action info: ";
+          else if ($gpu_response[$i]['STATUS'][0]['STATUS'] == 'W')
+             $dev_message = "Action warning: ";
+          else
+             $dev_message = "Action error: ";
+
+          echo "<tr><th colspan='4'>"
+                    . $dev_message . $gpu_response[$i]['STATUS'][0]['Msg'] .
+                 "</th><tr>";
+        }
+      }
+    }
+
+?>
 </thead>
 </table>
 </form>

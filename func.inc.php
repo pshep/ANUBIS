@@ -13,7 +13,8 @@ $data_totals = array('hosts'=>0,
                      'desmhash'=>0,
                      'utility'=>0,
                      'fivesmhash'=>0,
-                     'avemhash'=>0, 
+                     'avemhash'=>0,
+                     'getworks'=>0,
                      'accepts'=>0, 
                      'rejects'=>0, 
                      'discards'=>0,
@@ -23,7 +24,6 @@ $data_totals = array('hosts'=>0,
 
 $API_version = 0;
 $CGM_version = "0.0.0";
-$pools_in_use = array();
 
 /*****************************************************************************
 /*  Function:    get_config_data()
@@ -71,14 +71,18 @@ function get_host_data($host_id)
 *****************************************************************************/
 function getsock($addr, $port)
 {
+  global $socket_timeout;
+
   $socket = null;
   $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
   if ($socket === false || $socket === null)
   {
     return null;
   }
-  
-  socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => '3', 'usec' => '3000'));
+
+  socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $socket_timeout, 'usec' => '0'));
+  socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $socket_timeout, 'usec' => '0'));
+
   $res = @socket_connect($socket, $addr, $port);
   if ($res === false)
   {
@@ -165,7 +169,7 @@ function get_host_status($host_data)
       $API_version = $version_arr['VERSION'][0]['API'];
       $CGM_version = $version_arr['VERSION'][0]['CGMiner'];
       
-      if ($API_version >= 1.0)
+      if (version_compare($API_version, 1.0, '>='))
         return true;
     }
   }
@@ -301,15 +305,16 @@ function create_host_header()
     "<thead>
     	<tr>
         	<th scope='col' class='rounded-company'>Address</th>
-            <th scope='col' class='rounded-q1'>Status</th>
-            <th scope='col' class='rounded-q1'>GPUs</th>
+            <th scope='col' class='rounded-q1'>Devs</th>
             <th scope='col' class='rounded-q1'>Temp max</th>
             <th scope='col' class='rounded-q1'>MH/s des</th>
             <th scope='col' class='rounded-q1'>Util</th>
             <th scope='col' class='rounded-q1'>MH/s 5s</th>
             <th scope='col' class='rounded-q1'>MH/s avg</th>
-            <th scope='col' class='rounded-q1'>Rejects</th>
-            <th scope='col' class='rounded-q1'>Discards</th>
+            <th scope='col' class='rounded-q1'>Gets</th>
+            <th scope='col' class='rounded-q1'>Acc</th>
+            <th scope='col' class='rounded-q1'>Rej</th>
+            <th scope='col' class='rounded-q1'>Disc</th>
             <th scope='col' class='rounded-q1'>Stales</th>
             <th scope='col' class='rounded-q1'>Get Fails</th>
             <th scope='col' class='rounded-q1'>Rem Fails</th>
@@ -332,32 +337,25 @@ function create_host_header()
 *****************************************************************************/
 function process_host_devs($dev_data_array, &$activedevs, &$host5shash, &$maxtemp)
 {
-  global $pools_in_use;
-
   $devs = 0;
   $activedevs = 0;
   $host5shash = 0;
   $maxtemp = 0;
-  $pools_in_use = array();
 
   while(isset($dev_data_array['DEVS'][$devs]))
   {
-    /* Get 5 second has rate */
     $dev5shash = $dev_data_array['DEVS'][$devs]['MHS 5s'];
     $host5shash += $dev5shash;
 
-    /* Is device operating */
     if ($dev_data_array['DEVS'][$devs]['Status'] == "Alive" && $dev_data_array['DEVS'][$devs]['Enabled'] == "Y")
+    {
       $activedevs++;
-
-    /* Find higest temp */
+    }
     $temp = $dev_data_array['DEVS'][$devs]['Temperature'];
+
     if ($maxtemp < $temp)
       $maxtemp = $temp;
-    
-    /* Find which pools are in use */
-    $pools_in_use[$dev_data_array['DEVS'][$devs]['Last Share Pool']] = true;
-    
+
     $devs++;
   }
 
@@ -392,20 +390,24 @@ function process_host_info($host_data)
   
   $output = "
       <tr>
-        <th>CGminer version</th>
+        <th>CG version</th>
         <th>API version</th>
         <th>Up time</th>
         <th>Found H/W</th>
-        <th>Using ADL</th>
+        <th>ADL</th>
         <th>Pools and Strategy</th>
+        <th>Supported Devs</th>
+        <th>OS</th>
       </tr>
       <tr>
         <td>".$CGM_version."</td>
         <td>".$API_version."</td>
         <td>".$days."d ".$hours."h ".$mins."m ".$seconds."s</td>
-        <td>".$config_arr['CONFIG']['0']['CPU Count']." CPUs, ".$config_arr['CONFIG']['0']['GPU Count']." GPUs, ".$config_arr['CONFIG']['0']['BFL Count']." BFLs</td>
+        <td>".$config_arr['CONFIG']['0']['CPU Count']." CPUs, ".$config_arr['CONFIG']['0']['GPU Count']." GPUs, ".$config_arr['CONFIG']['0']['PGA Count']." FPGAs</td>
         <td>".$config_arr['CONFIG']['0']['ADL in use']."</td>
         <td>".$config_arr['CONFIG']['0']['Pool Count']." pools, using ".$config_arr['CONFIG']['0']['Strategy']."</td>
+        <td>".$config_arr['CONFIG']['0']['Device Code']."</td>
+        <td>".$config_arr['CONFIG']['0']['OS']."</td>
       </tr>";
 
   return $output;
@@ -434,7 +436,6 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     if ($dev_data_array != null)
       $devs = process_host_devs($dev_data_array, $activedevs, $fivesmhash, $max_temp);
 
-    $thisstatus = $summary_data_array['STATUS'][0]['STATUS'];
     $avgmhash =   $summary_data_array['SUMMARY'][0]['MHS av'];
     $accepted =   $summary_data_array['SUMMARY'][0]['Accepted'];
     $rejected =   $summary_data_array['SUMMARY'][0]['Rejected'];
@@ -443,11 +444,13 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     $getfail =    $summary_data_array['SUMMARY'][0]['Get Failures'];
     $remfail =    $summary_data_array['SUMMARY'][0]['Remote Failures'];
     $utility =    $summary_data_array['SUMMARY'][0]['Utility'];
-
+    $getworks =    $summary_data_array['SUMMARY'][0]['Getworks'];
+    
     if (isset($accepted) && $accepted !== 0)
     {
-      $rejects = round(100 / $accepted * $rejected, 1) . " %";
-      $discards = round(100 / $accepted * $discarded,1) . " %";
+      $efficency = round(100 / $getworks * $accepted, 1) . " %";
+      $rejects = round(100 / ($accepted + $rejected) * $rejected, 1) . " %";
+      $discards = round(100 / $getworks * $discarded, 1) . " %";
       $stales = round(100 / $accepted * $stale, 1) . " %";
       $getfails = round(100 / $accepted * $getfail, 1) . " %";
       $remfails = round(100 / $accepted * $remfail, 1) . " %";
@@ -475,13 +478,14 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     $thisdevcol = ($activedevs == $devs) ? "class=green" : "class=red";                      // active devs
 
 	$row = "
-      <td $thisstatuscol>$thisstatus</td>
       <td $thisdevcol>$activedevs/$devs</td>
       <td $tempcol>$max_temp</td>
       <td>$desmhash</td>
       <td>$utility</td>
       <td $fivesmhashcol>$fivesmhash<BR>$fivesmhashper %</td>
       <td $avgmhpercol>$avgmhash<BR>$avgmhper %</td>
+      <td>$getworks</td>
+      <td>$accepted<BR>$efficency</td>
       <td $rejectscol>$rejected<BR>$rejects</td>
       <td $discardscol>$discarded<BR>$discards</td>
       <td $stalescol>$stale<BR>$stales</td>
@@ -498,6 +502,7 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     $data_totals['fivesmhash'] += $fivesmhash;
     $data_totals['avemhash'] += $avgmhash;
     $data_totals['accepts'] += $accepted;
+    $data_totals['getworks'] += $getworks;
     $data_totals['rejects'] += $rejects;
     $data_totals['discards'] += $discards;
     $data_totals['stales'] += $stales;
@@ -538,7 +543,7 @@ function get_host_summary($host_data)
     // No data from host
     $error = socket_strerror(socket_last_error());
     $msg = "Connection to $host:$hostport failed: ";
-    $host_row = "<td colspan='12'>$msg '$error'</td>";
+    $host_row = "<td colspan='13'>$msg '$error'</td>";
   }
 
   $host_row = "<tbody><tr>
@@ -563,7 +568,7 @@ function create_devs_header()
 $header =
     "<thead>
     	<tr>
-        	<th scope='col' class='rounded-company'>GPU #</th>
+        	<th scope='col' class='rounded-company'>Dev</th>
             <th scope='col' class='rounded-q1'>En</th>
             <th scope='col' class='rounded-q1'>Status</th>
             <th scope='col' class='rounded-q1'>Temp</th>
@@ -598,24 +603,13 @@ function process_dev_disp($gpu_data_array, $edit=false)
   global $id;
   global $privileged;
 
-  /* show buttons if selected */
-  $button = $gpu_data_array['Enabled'];
-  if($edit && $privileged)
+  $accepted =   $gpu_data_array['Accepted'];
+  $rejected =   $gpu_data_array['Rejected'];
+
+  if (isset($accepted) && $accepted !== 0)
   {
-    if(($gpu_data_array['Enabled'] == "Y"))
-    {
-      $stop_disable = "";
-      $start_disable = "disabled='disabled'";
-    }
-    else
-    {
-      $stop_disable = "disabled='disabled'";
-      $start_disable = "";
-    }
-    $button =
-      "<input type='submit' value='Start' name='start' ".$start_disable."><br>
-       <input type='submit' value='Stop' name='stop' ".$stop_disable."><br>
-       <input type='submit' value='Restart' name='restart' ".$stop_disable.">";
+    $efficency = round(100 / ($accepted + $rejected) * $accepted, 1) . " %";
+    $rejects = round(100 / ($accepted + $rejected) * $rejected, 1) . " %";
   }
 
   /* set colors */
@@ -625,42 +619,103 @@ function process_dev_disp($gpu_data_array, $edit=false)
   $fancol = set_color_high($gpu_data_array['Fan Percent'], $config->yellowfan, $config->maxfan);   // Fans
   
   /* format fan speeds */
-  $fanspeed = ($gpu_data_array['Fan Speed'] == '-1') ? '---' : $gpu_data_array['Fan Speed']; 
-  $fanpercent = ($gpu_data_array['Fan Percent'] == '-1') ? '---' : $gpu_data_array['Fan Percent']. " %"; 
+  $fanspeed = ($gpu_data_array['Fan Speed'] == '-1') ? '---' : $gpu_data_array['Fan Speed'];
+  $fanpercent = ($gpu_data_array['Fan Percent'] == '-1') ? '---' : $gpu_data_array['Fan Percent']. " %";
 
-  /* format GPU number */
-  if ($privileged)
+  $DEV_cell = '???';
+
+  $GPU_specific1 =
+    "<td>---</td>
+    <td>---</td>
+    <td>---</td>
+    <td>---</td>
+    <td>---</td>";
+  $GPU_specific2 =
+    "<td>---</td>";
+
+  $button = $gpu_data_array['Enabled'];
+  
+  if(($gpu_data_array['Status'] != "Alive"))
+    $button_disable = " disabled='disabled'";
+
+  /* format DEV number */
+  if (isset($gpu_data_array['GPU']))
   {
-    $GPU_cell =
-    "<table border=0><tr>
-      <td><a href='editdev.php?id=".$id."&dev=".$gpu_data_array['GPU']."'><img src=\"images/edit.png\" border=0></a></td>
-      <td><a href='editdev.php?id=".$id."&dev=".$gpu_data_array['GPU']."'>".$gpu_data_array['GPU']."</a></td></td>
-    </tr></table>";
+    if ($privileged)
+    {
+      /* show buttons if selected */
+      if($edit)
+      {
+        if(($gpu_data_array['Enabled'] == "Y"))
+        {
+          $button =
+            "<input type='submit' value='Stop' name='stop'".$button_disable."><br>
+             <input type='submit' value='Restart' name='restart' ".$button_disable.">";
+        }
+        else
+        {
+          $button =
+            "<input type='submit' value='Start' name='start'".$button_disable."><br>
+             <input type='submit' value='Restart' name='restart' disabled='disabled'>";
+        }
+      }
+
+      $DEV_cell =
+      "<table border=0><tr>
+        <td><a href='editdev.php?id=".$id."&dev=".$gpu_data_array['GPU']."&type=GPU'><img src=\"images/edit.png\" border=0></a></td>
+        <td><a href='editdev.php?id=".$id."&dev=".$gpu_data_array['GPU']."&type=GPU'>GPU" .$gpu_data_array['GPU']."</a></td></td>
+      </tr></table>";
+    }
+    else
+    {
+      $DEV_cell = "GPU" . $gpu_data_array['GPU'];
+    }
+
+    $GPU_specific1 =
+      "<td $fancol>".$fanspeed."<BR>".$fanpercent."</td>
+      <td>".$gpu_data_array['GPU Clock']."</td>
+      <td>".$gpu_data_array['Memory Clock']."</td>
+      <td>".$gpu_data_array['GPU Voltage']."</td>
+      <td>".$gpu_data_array['GPU Activity']." %</td>";
+
+    $GPU_specific2 = 
+      "<td>".$gpu_data_array['Intensity']."</td>";
   }
-  else
+  else if (isset($gpu_data_array['PGA']))
   {
-    $GPU_cell = $gpu_data_array['GPU'];
+    /* temperature must be blanked when inactive (reports old value) */
+    if(($gpu_data_array['Enabled'] != "Y")) $gpu_data_array['Temperature'] = "---";    
+
+    if ($privileged)
+    {
+      if(($gpu_data_array['Enabled'] == "Y"))
+        $button = "<button type='submit' name='stoppga' value='".$gpu_data_array['PGA'].$button_disable."'>Stop</button>";
+      else
+        $button = "<button type='submit' name='startpga' value='".$gpu_data_array['PGA'].$button_disable."'>Start</button>";
+    }
+
+    $DEV_cell = $gpu_data_array['Name'] . $gpu_data_array['PGA'];
+  }
+  else if (isset($gpu_data_array['CPU']))
+  {
+    $DEV_cell = $gpu_data_array['Name'] . $gpu_data_array['CPU'];
   }
 
   /* form row */
   $row = " <tr>
-  <td>".$GPU_cell."</td>
+  <td>".$DEV_cell."</td>
   <td $encol>".$button."</td>
   <td $alcol>".$gpu_data_array['Status']."</td>
-  <td $tmpcol>".$gpu_data_array['Temperature']."</td>
-  <td $fancol>".$fanspeed."<BR>".$fanpercent."</td>
-  <td>".$gpu_data_array['GPU Clock']."</td>
-  <td>".$gpu_data_array['Memory Clock']."</td>
-  <td>".$gpu_data_array['GPU Voltage']."</td>
-  <td>".$gpu_data_array['GPU Activity']." %</td>
-  <td>".$gpu_data_array['MHS 5s']."</td>
+  <td $tmpcol>".$gpu_data_array['Temperature']."</td>"
+  . $GPU_specific1 .
+  "<td>".$gpu_data_array['MHS 5s']."</td>
   <td>".$gpu_data_array['MHS av']."</td>
-  <td>".$gpu_data_array['Accepted']."</td>
-  <td>".$gpu_data_array['Rejected']."</td>
+  <td>".$accepted."<BR>".$efficency."</td>
+  <td>".$rejected."<BR>".$rejects."</td>
   <td>".$gpu_data_array['Hardware Errors']."</td>
-  <td>".$gpu_data_array['Utility']."</td>
-  <td>".$gpu_data_array['Intensity']."</td>
-  </tr>";
+  <td>".$gpu_data_array['Utility']."</td>"
+  . $GPU_specific2 .
+  "</tr>";
 
   return $row;
 }
@@ -699,15 +754,28 @@ function process_devs_disp($host_data)
 /*  Description: retrives a single dev from a host
 /*  Inputs:      host_data - the host data array.
 /*               devid - the the device ID.
+/*               type - the the device type (CPU/GPU/PGA).
 /*  Outputs:     return - the device data array
 *****************************************************************************/
-function get_dev_data($host_data, $devid)
+function get_dev_data($host_data, $devid, $type)
 {
+  if ($type == 'CPU')
+  {
+    $cmnd = 'cpu';
+  }
+  else if ($type == 'GPU')
+  {
+    $cmnd = 'gpu';
+  }
+  else if ($type == 'PGA')
+  {
+    $cmnd = 'pga';
+  }
 
-  $arr = array ('command'=>'gpu','parameter'=>$devid);
+  $arr = array ('command'=>$cmnd,'parameter'=>$devid);
   $dev_arr = send_request_to_host($arr, $host_data);
-  
-  return $dev_arr['GPU']['0'];
+
+  return $dev_arr[$type]['0'];
 }
 
 /*****************************************************************************
@@ -747,11 +815,12 @@ function create_pool_header()
 function process_pool_disp($pool_data_array, $edit=false)
 {
   global $config;
-  global $pools_in_use;
+  global $API_version;
 
   $fivesmhashcol = $avgmhpercol = $rejectscol = $discardscol = $stalescol = $getfailscol = $remfailscol = "";
   $rejects = $discards = $stales = $getfails = $remfails = '---';
 
+  $getworks =   $pool_data_array['Getworks'];
   $accepted =   $pool_data_array['Accepted'];
   $rejected =   $pool_data_array['Rejected'];
   $discarded =  $pool_data_array['Discarded'];
@@ -762,23 +831,19 @@ function process_pool_disp($pool_data_array, $edit=false)
   /* set shares colours */
   if (isset($accepted) && $accepted !== 0)
   {
-    $rejects = round(100 / $accepted * $rejected, 1) . " %";
-    $discards = round(100 / $accepted * $discarded,1) . " %";
+    $efficency = round(100 / $getworks * $accepted, 1) . " %";
+    $rejects = round(100 / ($accepted + $rejected) * $rejected, 1) . " %";
+    $discards = round(100 / $getworks * $discarded, 1) . " %";
     $stales = round(100 / $accepted * $stale, 1) . " %";
     $getfails = round(100 / $accepted * $getfail, 1) . " %";
     $remfails = round(100 / $accepted * $remfail, 1) . " %";
-    
+
     $rejectscol = set_color_high($rejects, $config->yellowrejects, $config->maxrejects);      // Rejects
     $discardscol = set_color_high($discards, $config->yellowdiscards, $config->maxdiscards);  // Discards
     $stalescol = set_color_high($stales, $config->yellowstales, $config->maxstales);          // Stales
     $getfailscol = set_color_high($getfails, $config->yellowgetfails, $config->maxgetfails);  // Get fails
     $remfailscol = set_color_high($remfails, $config->yellowremfails, $config->maxremfails);  // Rem fails
   }
-  
-  /*Set in-use colour */
-  $poolcol = "";
-  if ($pools_in_use[$pool_data_array['POOL']] == true)
-    $poolcol = "class=green";
 
   /* set pool colour */
   if ($pool_data_array['Status'] == "Alive")
@@ -794,28 +859,31 @@ function process_pool_disp($pool_data_array, $edit=false)
   if($edit)
   {
     $disable_button = ($pool_data_array['Priority'] == '0') ? " disabled='disabled'" : "";
-    $top_button = " <button type='submit' name='top' value='".$pool_data_array['POOL']. "' " . $disable_button.">Top</button>";
+    $top_button = " <button type='submit' name='toppool' value='".$pool_data_array['POOL']. "' " . $disable_button.">Top</button>";
     
     if($pool_data_array['Status'] == "Alive")
-      $start_stop_button = " <button type='submit' name='stop' value='".$pool_data_array['POOL']."'>Stop</button>";
+      $start_stop_button = " <button type='submit' name='stoppool' value='".$pool_data_array['POOL']."'>Stop</button>";
     else if ($pool_data_array['Status'] == "Disabled")
-      $start_stop_button = " <button type='submit' name='start' value='".$pool_data_array['POOL']."'>Start</button>";
+      $start_stop_button = " <button type='submit' name='startpool' value='".$pool_data_array['POOL']."'>Start</button>";
     else
       $start_stop_button = " <button disabled='disabled'>Start</button>";
+
+    if (version_compare($API_version, 1.7, '>='))
+      $start_stop_button .= "<button type='submit' name='rempool' value='".$pool_data_array['POOL']."'>Delete</button>";
   }
   
   $row = "<tr>
-  <td $poolcol>".$pool_data_array['POOL']."</td>
+  <td>".$pool_data_array['POOL']."</td>
   <td>".$pool_data_array['Priority'].$top_button."</td>
   <td $alcol>".$pool_data_array['URL']."</td>
   <td $alcol>".$start_stop_button ."</td>
-  <td>".$pool_data_array['Getworks']."</td>
-  <td>".$pool_data_array['Accepted']."</td>
-  <td $rejectscol>".$pool_data_array['Rejected']."<BR>".$rejects."</td>
-  <td $discardscol>".$pool_data_array['Discarded']."<BR>".$discards."</td>
-  <td $stalescol>".$pool_data_array['Stale']."<BR>".$stales."</td>
-  <td $getfailscol>".$pool_data_array['Get Failures']."<BR>".$getfails."</td>
-  <td $remfailscol>".$pool_data_array['Remote Failures']."<BR>".$remfails."</td>
+  <td>".$getworks."</td>
+  <td>".$accepted."<BR>".$efficency."</td>
+  <td $rejectscol>".$rejected."<BR>".$rejects."</td>
+  <td $discardscol>".$discarded."<BR>".$discards."</td>
+  <td $stalescol>".$stale."<BR>".$stales."</td>
+  <td $getfailscol>".$getfail."<BR>".$getfails."</td>
+  <td $remfailscol>".$remfails."<BR>".$remfails."</td>
   </tr>";
 
   return $row;
@@ -867,13 +935,14 @@ function create_totals()
     "<thead>
     	<tr>
         	<th scope='col' class='rounded-company'>".$data_totals['hosts']." Hosts</th>
-            <th scope='col' class='rounded-q1'></th>
             <th scope='col' class='rounded-q1'>".$data_totals['devs']."/".$data_totals['activedevs']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['maxtemp']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['desmhash']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['utility']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['fivesmhash']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['avemhash']."</th>
+            <th scope='col' class='rounded-q1'>".$data_totals['getworks']."</th>
+            <th scope='col' class='rounded-q1'>".$data_totals['accepts']."</th>
             <th scope='col' class='rounded-q1'>".$sumrejects." %</th>
             <th scope='col' class='rounded-q1'>".$sumdiscards." %</th>
             <th scope='col' class='rounded-q1'>".$sumstales." %</th>
@@ -885,3 +954,4 @@ function create_totals()
 }
 
 ?>
+
