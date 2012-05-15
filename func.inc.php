@@ -686,7 +686,7 @@ function process_dev_disp($gpu_data_array, $edit=false)
     /* temperature must be blanked when inactive (reports old value) */
     if(($gpu_data_array['Enabled'] != "Y")) $gpu_data_array['Temperature'] = "---";    
 
-    if ($privileged)
+    if ($privileged && $edit)
     {
       if(($gpu_data_array['Enabled'] == "Y"))
         $button = "<button type='submit' name='stoppga' value='".$gpu_data_array['PGA'].$button_disable."'>Stop</button>";
@@ -724,9 +724,10 @@ function process_dev_disp($gpu_data_array, $edit=false)
 /*  Function:    process_devs_disp()
 /*  Description: processes the devs of a host for html display
 /*  Inputs:      host_data - the host data array.
+/*               edit - flag to show start/stop buttons
 /*  Outputs:     return - Devs table in html
 *****************************************************************************/
-function process_devs_disp($host_data)
+function process_devs_disp($host_data, $edit=false)
 {
   global $id;
 
@@ -741,7 +742,7 @@ function process_devs_disp($host_data)
     $id = $host_data['id'];
     while (isset($devs_arr['DEVS'][$i]))
     {
-      $table .= process_dev_disp($devs_arr['DEVS'][$i]);
+      $table .= process_dev_disp($devs_arr['DEVS'][$i], $edit);
       $i++;
     }
   }
@@ -951,6 +952,246 @@ function create_totals()
         </tr>
     </thead>";
     return $totals;
+}
+
+/*****************************************************************************
+/*  Function:    create_notify_header()
+/*  Description: Creates the header bar for notification information
+/*  Inputs:      none
+/*  Outputs:     return - notify header in html
+*****************************************************************************/
+function create_notify_header()
+{
+  $header =
+    "<thead>
+    <tr>
+      <th scope='col' rowspan='2' class='rounded-company'>Device</th>
+      <th scope='col' colspan='2' class='rounded-q1'>Time</th>
+      <th scope='col' rowspan='2' class='rounded-q1'>Reason</th>
+      <th scope='col' colspan='3' class='rounded-q1'>Thread Counters</th>
+      <th scope='col' colspan='5' class='rounded-q1'>Device Counters</th>
+    </tr>
+    <tr>
+      <th scope='col' class='rounded-q1'>Well</th>
+      <th scope='col' class='rounded-q1'>Ill</th>
+      <th scope='col' class='rounded-q1'>Fail<br>Init</th>
+      <th scope='col' class='rounded-q1'>Zero<br>Hash</th>
+      <th scope='col' class='rounded-q1'>Fail<br>Queue</th>
+      <th scope='col' class='rounded-q1'>Sick<br>60s</th>
+      <th scope='col' class='rounded-q1'>Dead<br>10m</th>
+      <th scope='col' class='rounded-q1'>Nostart</th>
+      <th scope='col' class='rounded-q1'>Over<br>Heat</th>
+      <th scope='col' class='rounded-q1'>Thermal<br>Cutoff</th>
+    </tr>
+</thead>";
+
+  return $header;
+}
+
+/*****************************************************************************
+/*  Function:    process_notify_disp()
+/*  Description: processes a single item of the notification array of a host
+/*               for html display
+/*  Inputs:      notify_data_array - the device detail array data.
+/*  Outputs:     return - the row in html
+*****************************************************************************/
+function process_notify_disp($notify_data_array)
+{
+  $well_time = $notify_data_array['Last Well'];
+  $notwell_time = $notify_data_array['Last Not Well'];
+
+  if ($well_time > 0)
+    $well_text = date ('d/m/y, H:i:s', $well_time);
+  else
+    $well_text = "Never well :(";
+
+  if ($notwell_time > 0)
+    $notwell_text = date ('d/m/y, H:i:s', $notwell_time);
+  else
+    $notwell_text = "Never ill :)";
+
+  $row = "<tr>
+  <td>".$notify_data_array['Name'] . $notify_data_array['ID']."</td>
+  <td>".$well_text."</td>
+  <td>".$notwell_text."</td>
+  <td>".$notify_data_array['Reason Not Well'] ."</td>
+  <td>".$notify_data_array['*Thread Fail Init']."</td>
+  <td>".$notify_data_array['*Thread Zero Hash']."</td>
+  <td>".$notify_data_array['*Thread Fail Queue']."</td>
+  <td>".$notify_data_array['*Dev Sick Idle 60s']."</td>
+  <td>".$notify_data_array['*Dev Dead Idle 600s']."</td>
+  <td>".$notify_data_array['*Dev Nostart']."</td>
+  <td>".$notify_data_array['*Dev Over Heat']."</td>
+  <td>".$notify_data_array['*Dev Thermal Cutoff']."</td>
+  </tr>";
+
+  return $row;
+}
+
+/*****************************************************************************
+/*  Function:    process_notify_table()
+/*  Description: processes the notifications of a host for html display
+/*  Inputs:      host_data - the host data array.
+/*  Outputs:     return - Device details table in html
+*****************************************************************************/
+function process_notify_table($host_data)
+{
+  $i = 0;
+  $table = "";
+
+  $arr = array ('command'=>'notify','parameter'=>'');
+  $response_arr = send_request_to_host($arr, $host_data);
+
+  if ($response_arr != null)
+  {
+    while (isset($response_arr['NOTIFY'][$i]))
+    {
+      $table .= process_notify_disp($response_arr['NOTIFY'][$i]);
+      $i++;
+    }
+  }
+  return $table;
+}
+
+/*****************************************************************************
+/*  Function:    create_devdetails_header()
+/*  Description: Creates the header bar for device information
+/*  Inputs:      none
+/*  Outputs:     return - pool header in html
+*****************************************************************************/
+function create_devdetails_header()
+{
+  $header =
+    "<thead>
+    <tr>
+      <th scope='col' class='rounded-company'>Device</th>
+      <th scope='col' class='rounded-q1'>Driver</th>
+      <th scope='col' class='rounded-q1'>Kernel</th>
+      <th scope='col' class='rounded-q1'>Model</th>
+      <th scope='col' class='rounded-q1'>Dev Path</th>
+    </tr>
+    </thead>";
+
+  return $header;
+}
+
+/*****************************************************************************
+/*  Function:    process_devdetails_disp()
+/*  Description: processes a single item of the device details array of a host 
+/*               for html display
+/*  Inputs:      dev_data_array - the device detail array data.
+/*  Outputs:     return - the row in html
+*****************************************************************************/
+function process_devdetails_disp($dev_data_array)
+{
+  $row = "<tr>
+  <td>".$dev_data_array['Name'] . $dev_data_array['ID'] . "</td>
+  <td>".$dev_data_array['Driver']."</td>
+  <td>".$dev_data_array['Kernel']."</td>
+  <td>".$dev_data_array['Model'] ."</td>
+  <td>".$dev_data_array['Device Path']."</td>
+  </tr>";
+
+  return $row;
+}
+
+/*****************************************************************************
+/*  Function:    process_devdetails_table()
+/*  Description: processes the device details of a host for html display
+/*  Inputs:      host_data - the host data array.
+/*  Outputs:     return - Device details table in html
+*****************************************************************************/
+function process_devdetails_table($host_data)
+{
+  $i = 0;
+  $table = "";
+
+  $arr = array ('command'=>'devdetails','parameter'=>'');
+  $response_arr = send_request_to_host($arr, $host_data);
+
+  if ($response_arr != null)
+  {
+    while (isset($response_arr['DEVDETAILS'][$i]))
+    {
+      $table .= process_devdetails_disp($response_arr['DEVDETAILS'][$i]);
+      $i++;
+    }
+  }
+  return $table;
+}
+/*****************************************************************************
+/*  Function:    create_stats_header()
+/*  Description: Creates the header bar for stats information
+/*  Inputs:      none
+/*  Outputs:     return - pool header in html
+*****************************************************************************/
+function create_stats_header()
+{
+  $header =
+    "<tr>
+      <th scope='col'>Raw Stats Table</th>
+    </tr>";
+
+  return $header;
+}
+/*****************************************************************************
+/*  Function:    process_stats_disp()
+/*  Description: processes a single item of the stats array of a host
+/*               for html display
+/*  Inputs:      stats_data_array - the device detail array data.
+/*  Outputs:     return - the row in html
+*****************************************************************************/
+function process_stats_disp($stats_data_array)
+{
+  $row = "<tr>";
+  
+  while (list($key, $val) = each($stats_data_array))
+  {
+    if ($key != 'STATS')
+    {
+      if ($key == 'Elapsed')
+      {
+        $days = floor($val / 86400);
+        $val -= $days * 86400;
+        $hours = floor($val / 3600);
+        $val -= $hours * 3600;
+        $mins = floor($val / 60);
+        $seconds = $val - ($mins * 60);
+        
+        $val = $days."d ".$hours."h ".$mins."m ".$seconds."s";
+      }
+
+      $row .= "<td>" . $key. ": " . $val . "</td>";
+    }
+  }
+  $row .= "</tr>";
+
+  return $row;
+}
+
+/*****************************************************************************
+/*  Function:    process_stats_table()
+/*  Description: processes the stats of a host for html display
+/*  Inputs:      host_data - the host data array.
+/*  Outputs:     return - Device details table in html
+*****************************************************************************/
+function process_stats_table($host_data)
+{
+  $i = 0;
+  $table = "";
+
+  $arr = array ('command'=>'stats','parameter'=>'');
+  $response_arr = send_request_to_host($arr, $host_data);
+
+  if ($response_arr != null)
+  {
+    while (isset($response_arr['STATS'][$i]))
+    {
+      $table .= process_stats_disp($response_arr['STATS'][$i]);
+      $i++;
+    }
+  }
+  return $table;
 }
 
 ?>

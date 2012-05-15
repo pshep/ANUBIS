@@ -109,12 +109,26 @@ if($host_data = get_host_data($id))
         $pool_response = send_request_to_host($arr, $host_data);
         sleep(2);
       }
-
+      
       if (isset($_POST['saveconf']))
       {
-        $arr = array ('command'=>'save','parameter'=>'');
+        $conf_path = filter_input(INPUT_POST, 'confpath', FILTER_SANITIZE_STRING);
+        
+        // add configuration file path to db table. It'll just fail if it's already there.
+        $alter = "ALTER TABLE `hosts` ADD `conf_file_path` varchar(255) NULL";
+        $updr = $dbh->exec($alter);
+
+        $updq = "UPDATE hosts SET conf_file_path = '$conf_path' WHERE id = $id";
+        $updr = $dbh->exec($updq);
+        if (!$updr)
+          die('FATAL: DB-Error: ' . db_error());
+
+        $arr = array ('command'=>'save','parameter'=>$conf_path);
         $pool_response = send_request_to_host($arr, $host_data);
         sleep(2);
+        
+        // as host data is updated, re-load it.
+        $host_data = get_host_data($id);
       }
       
       if (isset($_POST['restartbut']) && isset($_POST['restartchk']))
@@ -204,18 +218,15 @@ ddsmoothmenu.init({
     <div id="templatemo_main">
     	<div class="col_fw">
         	<div class="templatemo_megacontent">
-            	<h2>Host detail</h2>				 
+            	<h2>Host detail</h2>
+<?
+				 if ($host_alive)
+                   echo "<a href='hoststat.php?id=".$id."'>View host stats</a>";
+?>
                 <div class="cleaner h20"></div>
 <?
 if ($host_data)
 {  
-  if ($host_alive)
-  {
-    echo "<table id='rounded-corner' summary='HostInfo'>";
-    echo process_host_info($host_data);
-    echo "</table>";
-  }
-
   echo "<table id='rounded-corner' summary='HostSummary' align='center'>";
   echo create_host_header();
   echo get_host_summary($host_data);
@@ -226,7 +237,7 @@ if ($host_data)
     echo "<form name=pool action='edithost.php?id=".$id."' method='post'>";
     echo "<table id='rounded-corner' summary='DevsSummary' align='center'>";
     echo create_devs_header();
-    echo process_devs_disp($host_data);
+    echo process_devs_disp($host_data, $privileged);
 
     if (isset($dev_response))
     {
@@ -251,16 +262,22 @@ if ($host_data)
     echo create_pool_header();
     echo process_pools_disp($host_data, $privileged);
         
-    if ((version_compare($API_version, 1.11, '>=')) && $privileged)
+    if ((version_compare($API_version, 1.10, '>=')) && $privileged)
     {
 ?>
       <thead>
       	<tr>
-      	  <th colspan="11"  scope="col" class="rounded-company">
+      	  <th colspan="11">
             Pool URL: <input type="text" name="url">&nbsp;
             Username: <input type="text" name="user">&nbsp;
             Password: <input type="text" name="pass">&nbsp;&nbsp;
-            <input type="submit" value="Add Pool" name="addpool">&nbsp;
+            <input type="submit" value="Add Pool" name="addpool">
+            </th>
+          </tr>
+          <tr>
+            <th colspan="11">
+            Configuration file path (blank for default):
+            <input type="text" name="confpath" value="<?=$host_data['conf_file_path']?>">
             <input type="submit" value="Save Configuration" name="saveconf">
           </th>
         </tr>

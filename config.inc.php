@@ -8,7 +8,7 @@ $dbpassword = "h3rakles";
 $dbhost = "localhost";
 /* End MYSQL specific defines */
 
-$version = "2.1";
+$version = "2.2";
 
 /* Set desired database interface to 1, others 0 */
 $db_mysql = "1";
