@@ -262,7 +262,7 @@ if ($host_data)
     echo create_pool_header();
     echo process_pools_disp($host_data, $privileged);
         
-    if ((version_compare($API_version, 1.10, '>=')) && $privileged)
+    if ((version_compare($API_version, 1.11, '>=')) && $privileged)
     {
 ?>
       <thead>
