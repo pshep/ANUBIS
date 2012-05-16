@@ -1,10 +1,14 @@
-Installation instructions.
+INSTALLATION:
 
-Copy all the files/directories to your web shared directory in an anubis sub-
+Requires:
+PHP >= v5.2
+MySQL >= v5.0 or SQLite >= v3.0 or roll your own
+
+Copy all the files/directories to your web-shared directory in an Anubis sub-
 directory.
 
 Anubis uses the PDO API to connect to databases, so this feature must be enabled
-in your PHP setup. Consult 
+in your PHP setup. Consult
 http://php.net/manual/en/book.pdo.php
 on how to do this.
 
@@ -23,9 +27,77 @@ $db_mysql.
 $db_sqlite.
 
 Currently MYSQL and SQLite databases are supported, but to add your own is not
-too difficult. Just need to edit anubis_db_connect() and add your specific 
-database connection routines. The following URL has a good tutorial on how to 
+too difficult. Just need to edit anubis_db_connect() and add your specific
+database connection routines. The following URL has a good tutorial on how to
 do this:
 http://www.phpro.org/tutorials/Introduction-to-PHP-PDO.html
 
+To change the socket timeout (in case you have a number of hosts which are
+off-line and scanning is taking some time), you can adjust:
 
+$socket_timeout = 3;
+
+This is the timeout in whole seconds for a connection to wait for a response
+before continuing.
+
+HOST DETAIL:
+From the main page, clicking a host name will take you to a page displaying
+the selected host summary, pools and devices. Individual elements will be
+colored green/yellow/red according to selected values set in the
+configuration page.
+Pools which are dead (no communication) will show the URL in red. Disabled
+pools will show in yellow. Pools which are available will show in green.
+Pools actively in use by the miner, that is have shares being submitted to
+them, will show with their pool ID in green.
+
+WRITE ACCESS:
+As of CGMiner version 2.3.0 (API version 1.3), CGMiner has an additional option
+--api-allow to allow write access to the API, that is the ability to make
+changes to CGMiner. To give ANUBIS write privileges, make sure to add the
+webhost IP address with the 'W:' prefix. i.e.
+--api-allow W:192.168.1.1
+See the CGMiner documentation for more details.
+If write access is not granted, all buttons/controls for ANUBIS will be hidden.
+
+HOSTS PAGE:
+The hosts page (the main page), contains the a summary of all the hosts added to
+the database, including a sum/max/average of all the hosts for each of the
+parameters at the bottom of the list.
+
+HOST DETAILS:
+From the hosts listings page, each host name can be clicked to view the host in 
+detail.
+On the hosts details page GPUs and FPGAs and be stopped and (re)started. Pools
+can be disabled, deleted, their priority changed, and new pools added.
+To save the configuration for the next re-start, enter the file path of the for
+that particular host's configuration file (or leave blank if you know it to be
+in the default location) then click 'Save Configuration'.
+CGminer can also be restarted or quit using the controls at the bottom of the 
+page. To confirm these actions, you must click the associated checkbox next to
+the button.
+
+DEVICE DETAILS:
+From the hosts detail page, in the individual device listing, GPUs (and only 
+GPUs - not CPU or PGA) ID can be clicked to access the device edit page. Here 
+such controls as GPU clock, mem clock, GPU voltage, intensity etc., can be 
+changed. A checkbox to the left of each control indicates if that control will 
+be updated when the changes are applied. No check = no change. The checkbox will
+check itself as soon the slider is moved. Uncheck it manually if you do not want
+the control to be updated.
+On applying changes, feedback is given as to the state of the request at the
+bottom of the table. For GPU requests this is can be inaccurate as the GPU
+driver can report success when in fact the request was ignored. Feedback in 
+these cases are what the parameters are displaying.
+
+HOST STATS:
+From the host details page, just under the title is a link to the host stats
+page. This page contains further diagnostic information about the host.
+At the top is the host info summary including version info, up time, attached 
+devices, pool info, compiled (supported) devices, and operating system.
+Below that is the notifications table. This contains counters on faults found,
+when that last fault occured and what is was for each attached device.
+Next is the device summary. This table contains information on each of the 
+attached devices: driver used, kernel (for GPUs), model, and device path (for 
+FPGAs).
+Finally is the raw stats table. This is used for dev purposes and can mostly be
+ignored.
