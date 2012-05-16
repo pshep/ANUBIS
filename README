@@ -26,12 +26,6 @@ select that database:
 $db_mysql.
 $db_sqlite.
 
-To change the socket timeout (in case you have a number of hosts which are 
-off-line and scanning is taking some time), you can adjust:
-
-$socket_timeout = 3;
-
-
 Currently MYSQL and SQLite databases are supported, but to add your own is not
 too difficult. Just need to edit anubis_db_connect() and add your specific
 database connection routines. The following URL has a good tutorial on how to
@@ -98,12 +92,12 @@ these cases are what the parameters are displaying.
 HOST STATS:
 From the host details page, just under the title is a link to the host stats
 page. This page contains further diagnostic information about the host.
-At the top is the host info summary including version info, up time, attached 
+At the top is the host info summary including version info, up time, attached
 devices, pool info, compiled (supported) devices, and operating system.
 Below that is the notifications table. This contains counters on faults found,
 when that last fault occured and what is was for each attached device.
 Next is the device summary. This table contains information on each of the 
-attached devices: driver used, kernel (for GPUs), model, and device path (for 
+attached devices: driver used, kernel (for GPUs), model, and device path (for
 FPGAs).
 Finally is the raw stats table. This is used for dev purposes and can mostly be
 ignored.
