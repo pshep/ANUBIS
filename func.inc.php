@@ -24,6 +24,7 @@ $data_totals = array('hosts'=>0,
 
 $API_version = 0;
 $CGM_version = "0.0.0";
+$pools_in_use = array();
 
 /*****************************************************************************
 /*  Function:    get_config_data()
@@ -337,10 +338,13 @@ function create_host_header()
 *****************************************************************************/
 function process_host_devs($dev_data_array, &$activedevs, &$host5shash, &$maxtemp)
 {
+  global $pools_in_use;
+  
   $devs = 0;
   $activedevs = 0;
   $host5shash = 0;
   $maxtemp = 0;
+  $pools_in_use = array();
 
   while(isset($dev_data_array['DEVS'][$devs]))
   {
@@ -355,7 +359,10 @@ function process_host_devs($dev_data_array, &$activedevs, &$host5shash, &$maxtem
 
     if ($maxtemp < $temp)
       $maxtemp = $temp;
-
+    
+    /* Find which pools are in use */
+    $pools_in_use[$dev_data_array['DEVS'][$devs]['Last Share Pool']] = true;
+    
     $devs++;
   }
 
@@ -817,6 +824,7 @@ function process_pool_disp($pool_data_array, $edit=false)
 {
   global $config;
   global $API_version;
+  global $pools_in_use;
 
   $fivesmhashcol = $avgmhpercol = $rejectscol = $discardscol = $stalescol = $getfailscol = $remfailscol = "";
   $rejects = $discards = $stales = $getfails = $remfails = '---';
@@ -873,8 +881,13 @@ function process_pool_disp($pool_data_array, $edit=false)
       $start_stop_button .= "<button type='submit' name='rempool' value='".$pool_data_array['POOL']."'>Delete</button>";
   }
   
+  /*Set in-use colour */
+  $poolcol = "";
+  if ($pools_in_use[$pool_data_array['POOL']] == true)
+    $poolcol = "class=green";
+    
   $row = "<tr>
-  <td>".$pool_data_array['POOL']."</td>
+  <td $poolcol>".$pool_data_array['POOL']."</td>
   <td>".$pool_data_array['Priority'].$top_button."</td>
   <td $alcol>".$pool_data_array['URL']."</td>
   <td $alcol>".$start_stop_button ."</td>
