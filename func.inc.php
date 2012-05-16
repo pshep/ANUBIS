@@ -897,7 +897,7 @@ function process_pool_disp($pool_data_array, $edit=false)
   <td $discardscol>".$discarded."<BR>".$discards."</td>
   <td $stalescol>".$stale."<BR>".$stales."</td>
   <td $getfailscol>".$getfail."<BR>".$getfails."</td>
-  <td $remfailscol>".$remfails."<BR>".$remfails."</td>
+  <td $remfailscol>".$remfail."<BR>".$remfails."</td>
   </tr>";
 
   return $row;
