@@ -8,15 +8,24 @@ $dbpassword = "h3rakles";
 $dbhost = "localhost";
 /* End MYSQL specific defines */
 
-$version = "2.00";
+$version = "2.2";
 
 /* Set desired database interface to 1, others 0 */
-$db_mysql = "";
-$db_sqlite = "1";
+$db_mysql = "1";
+$db_sqlite = "";
+
+
+/* Sockets time out, set shorter if you have mutiple rigs specified in anubis
+   but turned off / disabled and page refreshes take a long time */
+
+$socket_timeout = 3;
 
 
 
 
+
+
+/*****************************************************************************/
 $auto_inc = "";
 $table_props = "";
 

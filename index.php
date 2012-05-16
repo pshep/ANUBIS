@@ -103,14 +103,14 @@ ddsmoothmenu.init({
 <?
 
 
-$result = $dbh->query("SELECT * FROM hosts");
+$result = $dbh->query("SELECT * FROM hosts ORDER BY name ASC");
 if ($result)
 {
     echo "<table id='rounded-corner' summary='Hostsummary'>";
 
     echo create_host_header();
 	while ($host_data = $result->fetch(PDO::FETCH_ASSOC))
-        echo get_host_status($host_data);
+        echo get_host_summary($host_data);
     echo create_totals();
 
 	echo "</table>";

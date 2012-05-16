@@ -1,15 +1,20 @@
 <?
 require("config.inc.php");
+require("func.inc.php");
 
 $dbh = anubis_db_connect();
+$config = get_config_data();
 
-$configq = $dbh->query('SELECT * FROM configuration');
-if (!$configq) {
-    die('FATAL: DB-Error: ' . db_error());
+if (!isset($id))
+  $id = 0 + $_GET['id'];
+if (!$id || $id == 0) 
+{
+	echo "Need a Host to deal with !";
+	die;
 }
-$config = $configq->fetch(PDO::FETCH_OBJ);
 
-
+if($host_data = get_host_data($id))
+  $host_alive = get_host_status($host_data);
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -47,7 +52,6 @@ ddsmoothmenu.init({
 </script>
 
 
-
 </head>
 <body>
 
@@ -59,13 +63,13 @@ ddsmoothmenu.init({
         
         <div id="templatemo_menu" class="ddsmoothmenu">
             <ul>
-              	<li><a href="index.php" >Home</a></li>
+              	<li><a href="index.php" class="selected">Home</a></li>
 
               	</li>
           		<li><a href="config.php">Configuration</a>
 
               	</li>
-              	<li><a href="faq.php" class="selected">FAQ</a>
+              	<li><a href="faq.php">FAQ</a>
 
                 </li>
               	<li><a href="contact.php">Contact/Donate</a></li>
@@ -74,48 +78,42 @@ ddsmoothmenu.init({
         </div> <!-- end of templatemo_menu -->
         
     </div> <!-- end of header -->
-    
-    
+
+
     <div id="templatemo_main">
     	<div class="col_fw">
         	<div class="templatemo_megacontent">
-            	<h2>Hosts</h2>
-				 
+            	<h2>Host Stats</h2>
+				 <a href="edithost.php?id=<?=$id?>">Back to host details</a>
                 <div class="cleaner h20"></div>
+<?
+if ($host_data && $host_alive)
+{
+  echo "<table id='rounded-corner' summary='HostInfo' width='100'>";
+  echo process_host_info($host_data);
+  echo "</table>";
 
-<table id="rounded-corner" summary="Hostsummary">
-    <thead>
-    	<tr>
-			<th>Whats this ?</th></tr><tr>
-			<td>Anubis is a web frontend for cgminer (<a href="https://bitcointalk.org/index.php?topic=28402.0">https://bitcointalk.org/index.php?topic=28402.0</a>) a bitcoin miner for windows/linux.
-			Anubis "watches" your hosts by connecting to the API Port of cgminer.</td>
-        </tr>
-    	<tr>
-			<th>How Do I enable it ?</th></tr><tr>
-			<td>The Connection is very simple, just add "--api-listen" (and "--api-network") to the cgminer command line and cgminer's api is enabled.
-			After installing Anubis simply start by <a href="addhost.php">adding some hosts.</a></td>
-        </tr>
-    	<tr>
-			<th>Something is wrong/does not work as expected.</th></tr><tr>
-			<td>Since we are in a very early development stage of Anubis there will surely be bugs. I'll start a git repo in short for Anubis and hope
-			this wil speed bugfixes up a little. For the moment, keep checking <a href="https://bitcointalk.org/index.php?board=42.0">https://bitcointalk.org/index.php?board=42.0</a>
-			for new messages and/or bugfixes concerning Anubis</td>
-        </tr>
-    	<tr>
-			<th>Installation ?</th></tr><tr>
-			<td>All you need is a php/mysql enabled host. This host has to be able to reach your miners by network i.e. you should be
-			able to ping your miners from the php/mysql enabled host. Simple copy all the Anubis files into a directory of your choice
-			into your webserver root and call it there like: http://my.host.com/anubis i.e.<BR>
-			<BR>
-			Anubis will need a mysql user/password/database connection. Edit "config.inc.php" and change it to your needs. </td>
-        </tr>
-        
-    </thead>
-</table>
+  echo "<table id='rounded-corner' summary='HostNotify' align='center'>";
+  echo create_notify_header();
+  echo process_notify_table($host_data);
+  echo "</table>";
 
-                
-                
-                
+  echo "<table id='rounded-corner' summary='HostDevDetails' align='center'>";
+  echo create_devdetails_header();
+  echo process_devdetails_table($host_data);
+  echo "</table>";
+
+  echo "<table id='rounded-corner' summary='HostStat' align='center'>";
+  echo create_stats_header();
+  echo "<tr><td><table border='0' width='100%'>";
+    echo process_stats_table($host_data);
+  echo "</table></td></tr>";
+  echo "</table>";
+}
+else {
+	echo "Host not found!<BR>";
+}
+?>
                 <div class="cleaner h20"></div>
 <!--                 <a href="#" class="more float_r"></a> -->
             </div>

@@ -60,7 +60,7 @@ h6 { font-size: 14px; margin: 0 0 5px; padding: 0; }
 #templatemo_wrapper {
 	margin: 0 auto;
 	padding: 0 10px;
-	width: 960px;
+	width: 1100px;
 }
 
 #templatemo_header {
@@ -74,7 +74,7 @@ h6 { font-size: 14px; margin: 0 0 5px; padding: 0; }
 	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
 	font-size: 12px;
 	margin: 45px;
-	width: 900px;
+	width: 1060px;
 	text-align: left;
 	border-collapse: collapse;
 }
@@ -136,11 +136,11 @@ h6 { font-size: 14px; margin: 0 0 5px; padding: 0; }
 
 #templatemo_menu { float: right; }
 
-#templatemo_fw { width: 960px; height: 500px; }
+#templatemo_fw { width: 1100px; height: 500px; }
 
 #templatemo_main {
 	clear: both;
-	width: 960px;
+	width: 1160px;
 	padding: 60px 0 20px;
 }
 
@@ -151,7 +151,7 @@ h6 { font-size: 14px; margin: 0 0 5px; padding: 0; }
 
 #templatemo_megacontent {
 	float: left;
-	width: 960px;
+	width: 1100px;
 }
 
 #templatemo_sidebar {
@@ -305,7 +305,7 @@ h6 { font-size: 14px; margin: 0 0 5px; padding: 0; }
 
 #templatemo_footer {
 	clear: both;
-	width: 960px;
+	width: 1100px;
 	padding: 30px 10px 15px;	
 	margin: 0 auto;
 	color: #666;

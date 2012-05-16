@@ -46,3 +46,13 @@ Caveats:
 This won't work if you're moving up from OCminer's initial versions which didn't have the port selection. You'll have to step up to his 1.03 version (which adds the port to the database), then on to this.
 Uses PDO database interface. I have no idea if your machine will support it (it *SHOULD* - the direct, database specific API is being depreciated).
 I suck at javascript. Could do with some tidying up / beautification.
+
+Version 2.10 (12 May 2012) - Enhancements by P_Shep @bitcoiltalk.org
+Changes:
+Expanded displayed parameters
+Better FPGA display and handling (enable/disable)
+Added pool deletion and addition
+Added action feedback
+Added CGMiner restart and quit.
+
+

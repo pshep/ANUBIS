@@ -26,6 +26,12 @@ select that database:
 $db_mysql.
 $db_sqlite.
 
+To change the socket timeout (in case you have a number of hosts which are 
+off-line and scanning is taking some time), you can adjust:
+
+$socket_timeout = 3;
+
+
 Currently MYSQL and SQLite databases are supported, but to add your own is not
 too difficult. Just need to edit anubis_db_connect() and add your specific
 database connection routines. The following URL has a good tutorial on how to
