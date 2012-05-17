@@ -82,5 +82,11 @@ function db_error()
   return $err_array[2];
 }
 
+function db_is_error()
+{
+  global $dbh;
+
+  return ($dbh->errorCode() !== '00000');
+}
 
 ?>

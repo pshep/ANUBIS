@@ -25,8 +25,8 @@ if (isset($_POST['savehostid']) && !isset($_POST['delete']))
   if ($newname && $newname !== "" && $address && $address !== "")
   {
 		$updq = "UPDATE hosts SET name = $newname, address = $address, port = $port, mhash_desired = $mhash WHERE id = $id_quote";
-		$updr = $dbh->exec($updq);
-		if (!$updr)
+		$dbh->exec($updq);
+		if (db_is_error())
     {
       die('FATAL: DB-Error: ' . db_error());
 		}
@@ -119,8 +119,9 @@ if($host_data = get_host_data($id))
         $updr = $dbh->exec($alter);
 
         $updq = "UPDATE hosts SET conf_file_path = '$conf_path' WHERE id = $id";
-        $updr = $dbh->exec($updq);
-        if (!$updr)
+        $dbh->exec($updq);
+         
+        if (db_is_error())
           die('FATAL: DB-Error: ' . db_error());
 
         $arr = array ('command'=>'save','parameter'=>$conf_path);
