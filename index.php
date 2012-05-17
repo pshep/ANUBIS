@@ -5,14 +5,9 @@ require("func.inc.php");
 $dbh = anubis_db_connect();
 
 $result = $dbh->query($show_tables);
+db_error();
 
-if (!$result) 
-{
-    echo "DB error getting table list: " . db_error();
-    exit;
-}
-
-while ($row = $result->fetch(PDO::FETCH_NUM)) 
+while ($row = $result->fetch(PDO::FETCH_NUM))
 {
     if ($row[0] == "configuration")
     	$gotconfigtbl = 1;

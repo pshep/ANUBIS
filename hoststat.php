@@ -3,7 +3,6 @@ require("config.inc.php");
 require("func.inc.php");
 
 $dbh = anubis_db_connect();
-$config = get_config_data();
 
 if (!isset($id))
   $id = 0 + $_GET['id'];

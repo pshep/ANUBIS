@@ -15,15 +15,13 @@ if (isset($_POST['savehostid']))
 	if ($newname && $newname !== "" && $address && $address !== "") {
 		$updq = "INSERT INTO hosts (name, address, port, mhash_desired) VALUES ($newname, $address, $port, $mhash)";
 		$updr = $dbh->exec($updq);
-		if (!$updr) 
-    		die('FATAL: DB error setting new host: ' . db_error());
+		db_error();
 
 		if ($updr > 0)
 		{
 			$askq = "SELECT id FROM hosts WHERE address = $address AND name = $newname";
 			$askr = $dbh->query($askq);
-			if (!$askr) 
-    			die('FATAL: DB error getting new ID: ' . db_error());
+			db_error();
 
 			$idr = $askr->fetch(PDO::FETCH_ASSOC);
 			$id = $idr['id'];
@@ -31,9 +29,7 @@ if (isset($_POST['savehostid']))
             $id = $dbh->quote($id);
 
             $host_data = get_host_data($id);
-
-            if (!$host_data)
-                die('FATAL: DB error getting host data from ID: ' . db_error());
+			db_error();
 		}
 	}
 }

@@ -36,7 +36,7 @@ function anubis_db_connect()
 
   if ($db_mysql)
   {
-    try 
+    try
     {
       /*** connect to MySQL database ***/
       $dbh = new PDO("mysql:host=".$dbhost.";dbname=".$dbdatabase, $dbusername, $dbpassword);
@@ -53,7 +53,7 @@ function anubis_db_connect()
   }
   else if ($db_sqlite)
   {
-    try 
+    try
     {
         /*** connect to SQLite database ***/
         $dbh = new PDO("sqlite:".$dbdatabase);
@@ -77,16 +77,14 @@ function db_error()
 {
   global $dbh;
 
-  $err_array = $dbh->errorInfo();
+  if ($dbh->errorCode() !== '00000')
+  {
+    $err_array = $dbh->errorInfo();
+    die('FATAL: DB-Error: ' . $err_array[2]);
 
-  return $err_array[2];
-}
-
-function db_is_error()
-{
-  global $dbh;
-
-  return ($dbh->errorCode() !== '00000');
+    return true;
+  }
+  return false;
 }
 
 ?>

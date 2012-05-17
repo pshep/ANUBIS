@@ -5,34 +5,6 @@ require("func.inc.php");
 $dbh = anubis_db_connect();
 $config = get_config_data();
 
-if (isset($_POST['delete']) && isset($_POST['savehostid']))
-{
-    $id = 0 + $_POST['savehostid'];
-    $id_quote = $dbh->quote($id);
-    $delq = "DELETE FROM hosts WHERE id = $id_quote";
-    $delr = $dbh->exec($delq);
-}
-
-if (isset($_POST['savehostid']) && !isset($_POST['delete'])) 
-{
-    $id = 0 + $_POST['savehostid'];
-    $id_quote = $dbh->quote($id);
-    $newname = $dbh->quote($_POST['macname']);
-    $address = $dbh->quote($_POST['ipaddress']);
-    $port = $dbh->quote($_POST['port']);
-    $mhash = $dbh->quote($_POST['mhash']);
-
-    if ($newname && $newname !== "" && $address && $address !== "")
-    {
-        $updq = "UPDATE hosts SET name = $newname, address = $address, port = $port, mhash_desired = $mhash WHERE id = $id_quote";
-        $updr = $dbh->exec($updq);
-        if (!$updr) 
-        {
-            die('FATAL: DB-Error: ' . db_error());
-        }
-    }
-}
-
 if (!isset($id))
   $id = 0 + $_GET['id'];
 if (!$id || $id == 0) 

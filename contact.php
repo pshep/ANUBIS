@@ -1,22 +1,3 @@
-<?
-require("config.inc.php");
-
-$dbh = anubis_db_connect();
-
-$configq = $dbh->query('SELECT * FROM configuration');
-if (!$configq) {
-    die('FATAL: DB-Error: ' . db_error());
-}
-$config = $configq->fetch(PDO::FETCH_OBJ);
-
-$result = $dbh->query('SELECT name,address,id AS hostid FROM hosts');
-if (!$result) {
-    die('FATAL: DB-Error: ' . db_error());
-}
-
-
-
-?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -90,19 +71,25 @@ ddsmoothmenu.init({
 <table id="rounded-corner" summary="Hostsummary">
     <thead>
     	<tr>
-			<th>Contact</th></tr><tr>
-			<td> You can msg me (ocminer) or have a look here: <a href="https://bitcointalk.org/index.php?board=42.0">https://bitcointalk.org/index.php?board=42.0</a> 
-			If that does not work, drop me a mail at m@rcel.to </td>
+			<th>Contact</th>
+        </tr>
+        <tr>
+			<td> You can msg me (<a href="https://bitcointalk.org/index.php?action=profile;u=47656">p_shep</a>) on bitcointalk.org or have a look here: <a href="https://bitcointalk.org/index.php?board=42.0">https://bitcointalk.org/index.php?board=42.0</a>
+            </td>
         </tr>
     	<tr>
 			<th>Donations</th></tr><tr>
-			<td>If you like Anubis I would really appreciate every donation to 1KgAKimMrbR6h4R6JBff9s3JqQCS53y149 </a></td>
+			<td>Anubis has taken many hours and hard work to get to the stage it's in. If you like Anubis, any donation will be appreciated: 1Fxpijq1NN52LzSzD2WtGbT3ZTWq366ejj </a></td>
         </tr>
-        
+    	<tr>
+			<th>Thanks</th></tr><tr>
+			<td>Many thanks to the orginator OCminer for starting the project. His donation address is: 1KgAKimMrbR6h4R6JBff9s3JqQCS53y149</a></td>
+        </tr>
+
     </thead>
 </table>
 
-                
+
                 
                 
                 <div class="cleaner h20"></div>

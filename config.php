@@ -100,19 +100,16 @@ if (isset($_POST['saveconf'])) {
 	
 	$updstring = "UPDATE configuration SET ".$updstring."";
 	$updcr = $dbh->query($updstring);
-	if (!$updcr) {
-    	die('FATAL: DB-Error: ' . db_error());
-	} else {
-		$updated = 1;
-	}	
-	
+	if (!db_error())
+      $updated = 1;
+
 	//echo "Final Updstring: $updstring !";
 
 }
 
 $configq = $dbh->query('SELECT * FROM configuration');
-if (!$configq) {
-    die('FATAL: DB-Error: ' . db_error());
+db_error();
+
 }
 $config = $configq->fetch(PDO::FETCH_OBJ);
 

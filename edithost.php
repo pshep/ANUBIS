@@ -11,6 +11,7 @@ if (isset($_POST['delete']) && isset($_POST['savehostid']))
 	$id_quote = $dbh->quote($id);
 	$delq = "DELETE FROM hosts WHERE id = $id_quote";
 	$delr = $dbh->exec($delq);
+    db_error();
 }
 
 if (isset($_POST['savehostid']) && !isset($_POST['delete'])) 
@@ -24,13 +25,10 @@ if (isset($_POST['savehostid']) && !isset($_POST['delete']))
 
   if ($newname && $newname !== "" && $address && $address !== "")
   {
-		$updq = "UPDATE hosts SET name = $newname, address = $address, port = $port, mhash_desired = $mhash WHERE id = $id_quote";
-		$dbh->exec($updq);
-		if (db_is_error())
-    {
-      die('FATAL: DB-Error: ' . db_error());
-		}
-	}
+    $updq = "UPDATE hosts SET name = $newname, address = $address, port = $port, mhash_desired = $mhash WHERE id = $id_quote";
+    $dbh->exec($updq);
+    db_error();
+  }
 }
 
 if (!isset($id))
@@ -116,13 +114,11 @@ if($host_data = get_host_data($id))
         
         // add configuration file path to db table. It'll just fail if it's already there.
         $alter = "ALTER TABLE `hosts` ADD `conf_file_path` varchar(255) NULL";
-        $updr = $dbh->exec($alter);
+        $dbh->exec($alter);
 
         $updq = "UPDATE hosts SET conf_file_path = '$conf_path' WHERE id = $id";
         $dbh->exec($updq);
-         
-        if (db_is_error())
-          die('FATAL: DB-Error: ' . db_error());
+        db_error();
 
         $arr = array ('command'=>'save','parameter'=>$conf_path);
         $pool_response = send_request_to_host($arr, $host_data);
