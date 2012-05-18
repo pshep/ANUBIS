@@ -110,7 +110,6 @@ if (isset($_POST['saveconf'])) {
 $configq = $dbh->query('SELECT * FROM configuration');
 db_error();
 
-}
 $config = $configq->fetch(PDO::FETCH_OBJ);
 
 ?>
