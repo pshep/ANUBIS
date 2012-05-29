@@ -101,3 +101,12 @@ attached devices: driver used, kernel (for GPUs), model, and device path (for
 FPGAs).
 Finally is the raw stats table. This is used for dev purposes and can mostly be
 ignored.
+
+ACCOUNTS:
+This allows you to add bitcoin addresses to groups for convienient balance look-
+up. Start by adding a group with a name and an exchange currency. Then add your 
+individual accounts to the group. The page will display a summary of the amount
+of BTC received, sent and the current balance in BTC and the currency of your 
+choice. Accounts can be removed from groups by selecting the account checkbox
+then clicking 'Delete selected'. To remove the entire group, select the checkbox
+in the totals row then click 'Delete selected'.

@@ -38,29 +38,8 @@ ddsmoothmenu.init({
 
 <div id="templatemo_wrapper">
 
-	<div id="templatemo_header">
-    
-    	<div id="site_title"><h1><a href="index.php">Main</a></h1></div>
-        
-        <div id="templatemo_menu" class="ddsmoothmenu">
-            <ul>
-              	<li><a href="index.php" >Home</a></li>
+<? include ('header.inc.php'); ?>
 
-              	</li>
-          		<li><a href="config.php">Configuration</a>
-
-              	</li>
-              	<li><a href="faq.php">FAQ</a>
-
-                </li>
-              	<li><a href="contact.php" class="selected">Contact/Donate</a></li>
-            </ul>
-            <br style="clear: left" />
-        </div> <!-- end of templatemo_menu -->
-        
-    </div> <!-- end of header -->
-    
-    
     <div id="templatemo_main">
     	<div class="col_fw">
         	<div class="templatemo_megacontent">
@@ -74,7 +53,7 @@ ddsmoothmenu.init({
 			<th>Contact</th>
         </tr>
         <tr>
-			<td> You can msg me (<a href="https://bitcointalk.org/index.php?action=profile;u=47656">p_shep</a>) on bitcointalk.org or have a look here: <a href="https://bitcointalk.org/index.php?board=42.0">https://bitcointalk.org/index.php?board=42.0</a>
+			<td> You can msg me (<a href="https://bitcointalk.org/index.php?action=profile;u=47656">p_shep</a>) on bitcointalk.org or have a look here: <a href="https://bitcointalk.org/index.php?topic=57342.0">https://bitcointalk.org/index.php?topic=57342.0</a>
             </td>
         </tr>
     	<tr>
@@ -82,8 +61,12 @@ ddsmoothmenu.init({
 			<td>Anubis has taken many hours and hard work to get to the stage it's in. If you like Anubis, any donation will be appreciated: 1Fxpijq1NN52LzSzD2WtGbT3ZTWq366ejj </a></td>
         </tr>
     	<tr>
-			<th>Thanks</th></tr><tr>
-			<td>Many thanks to the orginator OCminer for starting the project. His donation address is: 1KgAKimMrbR6h4R6JBff9s3JqQCS53y149</a></td>
+			<th>Thanks</th></tr>
+        <tr>
+			<td>Many thanks to the orginator OCminer for starting the project. His donation address is: 1KgAKimMrbR6h4R6JBff9s3JqQCS53y149</td>
+        </tr>
+        <tr>
+			<td>Accounts information retireved from <a href="http://www.blockchain.info/">Blockchain.info</a> and <a href="https://mtgox.com/">Mt.Gox</a> APIs</td>
         </tr>
 
     </thead>

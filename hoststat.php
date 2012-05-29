@@ -56,28 +56,7 @@ ddsmoothmenu.init({
 
 <div id="templatemo_wrapper">
 
-	<div id="templatemo_header">
-    
-    	<div id="site_title"><h1><a href="index.php">Main</a></h1></div>
-        
-        <div id="templatemo_menu" class="ddsmoothmenu">
-            <ul>
-              	<li><a href="index.php" class="selected">Home</a></li>
-
-              	</li>
-          		<li><a href="config.php">Configuration</a>
-
-              	</li>
-              	<li><a href="faq.php">FAQ</a>
-
-                </li>
-              	<li><a href="contact.php">Contact/Donate</a></li>
-            </ul>
-            <br style="clear: left" />
-        </div> <!-- end of templatemo_menu -->
-        
-    </div> <!-- end of header -->
-
+<? include ('header.inc.php'); ?>
 
     <div id="templatemo_main">
     	<div class="col_fw">
