@@ -12,8 +12,8 @@ $mtgox_url = 'https://mtgox.com/api/1/';
 $mtgox_exchange_path = '/public/ticker';
 
 $blockchain_url = 'http://www.blockchain.info/';
-$blockchain_addr_path = 'rawaddr/';
-$blockchain_link_path = 'address/';
+$blockchain_addr_options = '?format=json&limit=0';
+$blockchain_addr_path = 'address/';
 
 $exchange_rate = 0;
 $currency_code = 'USD';
@@ -125,14 +125,14 @@ function get_acc_summary($acc_data)
   global $group_totals;
   global $blockchain_url;
   global $blockchain_addr_path;
-  global $blockchain_link_path;
+  global $blockchain_addr_options;
 
   global $exchange_rate;
   global $opts;
 
   /* get data of address from blockchain.info */
   $btc_address = $acc_data['address'];
-  $url = $blockchain_url . $blockchain_addr_path . $btc_address;
+  $url = $blockchain_url . $blockchain_addr_path . $btc_address . $blockchain_addr_options;
 
   $context  = stream_context_create($opts);
 
@@ -162,7 +162,7 @@ function get_acc_summary($acc_data)
     <td>".
       $acc_data['name']
     ."</td>
-    <td><a href='".$blockchain_url.$blockchain_link_path.$btc_address."'>".
+    <td><a href='".$blockchain_url.$blockchain_addr_path.$btc_address."'>".
       $btc_address
     ."</a></td>
     <td>".
