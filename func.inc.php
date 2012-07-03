@@ -982,7 +982,7 @@ function create_notify_header()
       <th scope='col' colspan='2' class='rounded-q1'>Time</th>
       <th scope='col' rowspan='2' class='rounded-q1'>Reason</th>
       <th scope='col' colspan='3' class='rounded-q1'>Thread Counters</th>
-      <th scope='col' colspan='5' class='rounded-q1'>Device Counters</th>
+      <th scope='col' colspan='6' class='rounded-q1'>Device Counters</th>
     </tr>
     <tr>
       <th scope='col' class='rounded-q1'>Well</th>
@@ -995,6 +995,7 @@ function create_notify_header()
       <th scope='col' class='rounded-q1'>Nostart</th>
       <th scope='col' class='rounded-q1'>Over<br>Heat</th>
       <th scope='col' class='rounded-q1'>Thermal<br>Cutoff</th>
+      <th scope='col' class='rounded-q1'>Comms<br>Error</th>
     </tr>
 </thead>";
 
@@ -1036,6 +1037,7 @@ function process_notify_disp($notify_data_array)
   <td>".$notify_data_array['*Dev Nostart']."</td>
   <td>".$notify_data_array['*Dev Over Heat']."</td>
   <td>".$notify_data_array['*Dev Thermal Cutoff']."</td>
+  <td>".$notify_data_array['*Dev Comms Error']."</td>
   </tr>";
 
   return $row;
