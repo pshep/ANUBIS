@@ -64,7 +64,15 @@ if($host_data = get_host_data($id))
         $dev_response = send_request_to_host($arr, $host_data);
         sleep(2);
       }
-
+      
+      if (isset($_POST['flashpga']))
+      {
+      	$pga_id = filter_input(INPUT_POST, 'flashpga', FILTER_SANITIZE_NUMBER_INT);
+      	$arr = array ('command'=>'pgaidentify','parameter'=>$pga_id);
+      	$dev_response = send_request_to_host($arr, $host_data);
+      	sleep(2);
+      }
+      
       if (isset($_POST['toppool']))
       {
         $pool_id = filter_input(INPUT_POST, 'toppool', FILTER_SANITIZE_NUMBER_INT);
@@ -213,7 +221,7 @@ if ($host_data)
     echo "<form name=pool action='edithost.php?id=".$id."' method='post'>";
     echo "<table id='rounded-corner' summary='DevsSummary' align='center'>";
     echo create_devs_header();
-    echo process_devs_disp($host_data, $privileged);
+    echo process_devs_disp($host_data, FALSE);
 
     if (isset($dev_response))
     {
@@ -243,7 +251,7 @@ if ($host_data)
 ?>
       <thead>
       	<tr>
-      	  <th colspan="11">
+      	  <th colspan="12">
             Pool URL: <input type="text" name="url">&nbsp;
             Username: <input type="text" name="user">&nbsp;
             Password: <input type="text" name="pass">&nbsp;&nbsp;
@@ -251,7 +259,7 @@ if ($host_data)
             </th>
           </tr>
           <tr>
-            <th colspan="11">
+            <th colspan="12">
             Configuration file path (blank for default):
             <input type="text" name="confpath" value="<?=$host_data['conf_file_path']?>">
             <input type="submit" value="Save Configuration" name="saveconf">
@@ -270,7 +278,7 @@ if ($host_data)
            $pool_message = "Action error: ";
 
         echo "<tr>
-                <th colspan='11'  scope='col' class='rounded-company'>"
+                <th colspan='12'  scope='col' class='rounded-company'>"
                   . $pool_message . $pool_response['STATUS'][0]['Msg'].
                "</th>
               </tr>";
