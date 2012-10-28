@@ -16,7 +16,8 @@ $data_totals = array('hosts'=>0,
 					 'fivesmhash'=>0,
                      'avemhash'=>0,
                      'getworks'=>0,
-                     'accepts'=>0, 
+                     'VarDiffAccepts'=>0, 
+                     'Diff1Accepts'=>0, 
                      'rejects'=>0, 
                      'discards'=>0,
                      'stales'=>0, 
@@ -307,22 +308,27 @@ function create_host_header()
   $header =
     "<thead>
     	<tr>
-        	<th scope='col' class='rounded-company'>Address</th>
-            <th scope='col' class='rounded-q1'>Devs</th>
-            <th scope='col' class='rounded-q1'>Temp max</th>
-            <th scope='col' class='rounded-q1'>MH/s des</th>
-            <th scope='col' class='rounded-q1'>Util</th>
-            <th scope='col' class='rounded-q1'>MH/s 5s</th>
-            <th scope='col' class='rounded-q1'>MH/s avg</th>
-            <th scope='col' class='rounded-q1'>Gets</th>
-            <th scope='col' class='rounded-q1'>Acc</th>
-            <th scope='col' class='rounded-q1'>Rej</th>
-            <th scope='col' class='rounded-q1'>Disc</th>
-            <th scope='col' class='rounded-q1'>Stales</th>
-            <th scope='col' class='rounded-q1'>Get Fails</th>
-            <th scope='col' class='rounded-q1'>Rem Fails</th>
+        	<th scope='col' rowspan='2' class='rounded-company'>Address</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>Devs</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>Temp max</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>MH/s des</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>Util</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>MH/s 5s</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>MH/s avg</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>Gets</th>
+            <th scope='col' colspan='2' class='rounded-q1'>Accepted</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>Diff</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>Rej</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>Disc</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>Stales</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>Get Fails</th>
+            <th scope='col' rowspan='2' class='rounded-q1'>Rem Fails</th>
         </tr>
-    </thead>";
+        <tr>
+          <th scope='col' class='rounded-q1'>Var</th>
+          <th scope='col' class='rounded-q1'>1</th>
+        </tr>
+      </thead>";
     
     return $header;
 }
@@ -465,15 +471,21 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     $utility =    $summary_data_array['SUMMARY'][0]['Utility'];
     $Wutility =    $summary_data_array['SUMMARY'][0]['Work Utility'];
     $getworks =    $summary_data_array['SUMMARY'][0]['Getworks'];
+    $Diff1Accept = $summary_data_array['SUMMARY'][0]['Difficulty Accepted'];
     
     if (isset($accepted) && $accepted !== 0)
     {
-      $efficency = round(100 / $getworks * $accepted, 1) . " %";
+      $difficulty = round($Diff1Accept/$accepted,2);
+      
+      $efficency = round(100 / $getworks * $accepted, 0) . " %";
+      $diff1efficency = round(100 / $getworks * $Diff1Accept, 0) . " %";
       $rejects = round(100 / ($accepted + $rejected) * $rejected, 1) . " %";
       $discards = round(100 / $getworks * $discarded, 1) . " %";
       $stales = round(100 / $accepted * $stale, 1) . " %";
       $getfails = round(100 / $accepted * $getfail, 1) . " %";
       $remfails = round(100 / $accepted * $remfail, 1) . " %";
+      
+      $Diff1Accept = round($Diff1Accept, 0);
       
       $rejectscol = set_color_high($rejects, $config->yellowrejects, $config->maxrejects);     // Rejects
       $discardscol = set_color_high($discards, $config->yellowdiscards, $config->maxdiscards); // Discards
@@ -506,6 +518,8 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
       <td $avgmhpercol>$avgmhash<BR>$avgmhper %</td>
       <td>$getworks</td>
       <td>$accepted<BR>$efficency</td>
+      <td>$Diff1Accept<BR>$diff1efficency</td>
+      <td>$difficulty</td>
       <td $rejectscol>$rejected<BR>$rejects</td>
       <td $discardscol>$discarded<BR>$discards</td>
       <td $stalescol>$stale<BR>$stales</td>
@@ -522,7 +536,8 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     $data_totals['Wutility'] += $Wutility;
     $data_totals['fivesmhash'] += $fivesmhash;
     $data_totals['avemhash'] += $avgmhash;
-    $data_totals['accepts'] += $accepted;
+    $data_totals['VarDiffAccepts'] += $accepted;
+    $data_totals['Diff1Accepts'] += $Diff1Accept;
     $data_totals['getworks'] += $getworks;
     $data_totals['rejects'] += $rejects;
     $data_totals['discards'] += $discards;
@@ -810,17 +825,21 @@ function create_pool_header()
   $header =
     "<thead>
     <tr>
-      <th scope='col' class='rounded-company'>Pool</th>
-      <th scope='col' class='rounded-q1'>Priority</th>
-      <th scope='col' class='rounded-q1' colspan='2'>URL</th>
-      <th scope='col' class='rounded-q1'>Gets</th>
-      <th scope='col' class='rounded-q1'>Accepts</th>
-      <th scope='col' class='rounded-q1'>Diff</th>
-      <th scope='col' class='rounded-q1'>Rejects</th>
-      <th scope='col' class='rounded-q1'>Discards</th>
-      <th scope='col' class='rounded-q1'>Stales</th>
-      <th scope='col' class='rounded-q1'>Get Fails</th>
-      <th scope='col' class='rounded-q1'>Rem fails</th>
+      <th scope='col' rowspan='2' class='rounded-company'>Pool</th>
+      <th scope='col' rowspan='2'  class='rounded-q1'>Priority</th>
+      <th scope='col' rowspan='2'  class='rounded-q1' colspan='2'>URL</th>
+      <th scope='col' rowspan='2'  class='rounded-q1'>Gets</th>
+      <th scope='col' class='rounded-q1' colspan='2'>Accepts</th>
+      <th scope='col' rowspan='2'  class='rounded-q1'>Diff</th>
+      <th scope='col' rowspan='2'  class='rounded-q1'>Rejects</th>
+      <th scope='col' rowspan='2'  class='rounded-q1'>Discards</th>
+      <th scope='col' rowspan='2'  class='rounded-q1'>Stales</th>
+      <th scope='col' rowspan='2'  class='rounded-q1'>Get Fails</th>
+      <th scope='col' rowspan='2'  class='rounded-q1'>Rem fails</th>
+      </tr>
+      <tr>
+      <th scope='col' class='rounded-q1'>Var Diff</th>
+      <th scope='col' class='rounded-q1'>Diff 1</th>
       </tr>
     </thead>";
 
@@ -850,18 +869,23 @@ function process_pool_disp($pool_data_array, $edit=false)
   $stale =      $pool_data_array['Stale'];
   $getfail =    $pool_data_array['Get Failures'];
   $remfail =    $pool_data_array['Remote Failures'];
-  $difficulty = round($pool_data_array['Difficulty Accepted']/$pool_data_array['Accepted'],2);  
+  $Diff1Accept = $pool_data_array['Difficulty Accepted'];
 
   /* set shares colours */
   if (isset($accepted) && $accepted !== 0)
   {
-    $efficency = round(100 / $getworks * $accepted, 1) . " %";
+    $difficulty = round($Diff1Accept/$accepted,2);  
+    
+    $efficency = round(100 / $getworks * $accepted, 0) . " %";
+    $diff1efficency = round(100 / $getworks * $Diff1Accept, 0) . " %";
     $rejects = round(100 / ($accepted + $rejected) * $rejected, 1) . " %";
     $discards = round(100 / $getworks * $discarded, 1) . " %";
     $stales = round(100 / $accepted * $stale, 1) . " %";
     $getfails = round(100 / $accepted * $getfail, 1) . " %";
     $remfails = round(100 / $accepted * $remfail, 1) . " %";
 
+    $Diff1Accept = round($Diff1Accept, 0);
+    
     $rejectscol = set_color_high($rejects, $config->yellowrejects, $config->maxrejects);      // Rejects
     $discardscol = set_color_high($discards, $config->yellowdiscards, $config->maxdiscards);  // Discards
     $stalescol = set_color_high($stales, $config->yellowstales, $config->maxstales);          // Stales
@@ -908,6 +932,7 @@ function process_pool_disp($pool_data_array, $edit=false)
   <td $alcol>".$start_stop_button ."</td>
   <td>".$getworks."</td>
   <td>".$accepted."<BR>".$efficency."</td>
+  <td>".$Diff1Accept."<BR>".$diff1efficency."</td>
   <td>$difficulty</td>
   <td $rejectscol>".$rejected."<BR>".$rejects."</td>
   <td $discardscol>".$discarded."<BR>".$discards."</td>
@@ -960,7 +985,8 @@ function create_totals()
     $sumstales = round($data_totals['stales'] / $data_totals['hosts'],1);
     $sumgetfails = round($data_totals['getfails'] / $data_totals['hosts'],1);
     $sumremfails = round($data_totals['remfails'] / $data_totals['hosts'],1);
-
+    $difficulty = round($data_totals['Diff1Accepts'] / $data_totals['VarDiffAccepts'],2);
+    
     $totals =
     "<thead>
     	<tr>
@@ -972,7 +998,9 @@ function create_totals()
             <th scope='col' class='rounded-q1'>".$data_totals['fivesmhash']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['avemhash']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['getworks']."</th>
-            <th scope='col' class='rounded-q1'>".$data_totals['accepts']."</th>
+            <th scope='col' class='rounded-q1'>".$data_totals['VarDiffAccepts']."</th>
+            <th scope='col' class='rounded-q1'>".$data_totals['Diff1Accepts']."</th>
+            <th scope='col' class='rounded-q1'>".$difficulty."</th>
             <th scope='col' class='rounded-q1'>".$sumrejects." %</th>
             <th scope='col' class='rounded-q1'>".$sumdiscards." %</th>
             <th scope='col' class='rounded-q1'>".$sumstales." %</th>
