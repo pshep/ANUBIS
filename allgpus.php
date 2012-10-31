@@ -57,7 +57,7 @@ ddsmoothmenu.init({
 
 <?
 
-$result = $dbh->query("SELECT * FROM hosts");
+$result = $dbh->query("SELECT * FROM hosts ORDER BY name ASC");
 if ($result)
 {
   echo "<table id='rounded-corner' summary='Hostsummary'>";
@@ -71,7 +71,7 @@ if ($result)
       if ($host_alive)
       {
         $privileged = get_privileged_status($host_data);
-        echo "<tr><td colspan='14'>";
+        echo "<tr><td colspan='16'>";
           echo "<table id='rounded-corner' summary='PoolSummary' align='center'>";
           echo create_pool_header();
           echo process_pools_disp($host_data);

@@ -579,7 +579,7 @@ function get_host_summary($host_data)
     // No data from host
     $error = socket_strerror(socket_last_error());
     $msg = "Connection to $host:$hostport failed: ";
-    $host_row = "<td colspan='13'>$msg '$error'</td>";
+    $host_row = "<td colspan='15'>$msg '$error'</td>";
   }
 
   $host_row = "<tbody><tr>
