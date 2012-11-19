@@ -12,7 +12,7 @@ $mtgox_url = 'https://mtgox.com/api/1/';
 $mtgox_exchange_path = '/public/ticker';
 
 $blockchain_url = 'http://www.blockchain.info/';
-$blockchain_addr_options = '?format=json&limit=0';
+$blockchain_addr_options = '?format=json&limit=0&filter=5';
 $blockchain_addr_path = 'address/';
 
 $exchange_rate = 0;
