@@ -118,6 +118,15 @@ else
         <div class="cleaner"></div>
     </div>
 </div> 
+
+<script>
+$(function() {
+  setInterval(update, 1000);
+});
+function update() {
+        $('#rounded-corner').load('refresh_hosts.php');
+}
+</script>
   
 </body>
 </html>
