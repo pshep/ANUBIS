@@ -195,7 +195,7 @@ echo "<b>Configuration updated !</b>";
         <tr>
         <td class="blue">Stales</td>
         <td><input type=text name="yellowstales" value="<?php echo $config->yellowstales; ?>"></td>
-        <td><input type=text name="maxstales" value="<?php echo $config->maxstales;"></td>        
+        <td><input type=text name="maxstales" value="<?php echo $config->maxstales; ?>"></td>        
         </tr>
         <tr>
         <td class="blue">Get Fails</td>
