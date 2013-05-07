@@ -1,4 +1,4 @@
-<?
+<?php
 require("config.inc.php");
 require("func.inc.php");
 
@@ -197,18 +197,18 @@ ddsmoothmenu.init({
 
 <div id="templatemo_wrapper">
 
-<? include ('header.inc.php'); ?>
+<?php include ('header.inc.php'); ?>
 
     <div id="templatemo_main">
     	<div class="col_fw">
         	<div class="templatemo_megacontent">
             	<h2>Host detail</h2>
-<?
+<?php
 				 if ($host_alive)
                    echo "<a href='hoststat.php?id=".$id."'>View host stats</a>";
 ?>
                 <div class="cleaner h20"></div>
-<?
+<?php
 if ($host_data)
 {  
   echo "<table id='rounded-corner' summary='HostSummary' align='center'>";
@@ -261,11 +261,11 @@ if ($host_data)
           <tr>
             <th colspan="13">
             Configuration file path (blank for default):
-            <input type="text" name="confpath" value="<?=$host_data['conf_file_path']?>">
+            <input type="text" name="confpath" value="<?php=$host_data['conf_file_path']?>">
             <input type="submit" value="Save Configuration" name="saveconf">
           </th>
         </tr>
-<?
+<?php
       if (isset($pool_response))
       {
         if ($pool_response['STATUS'][0]['STATUS'] == 'S')
@@ -307,7 +307,7 @@ if ($host_data)
            </th>
         </tr>      
       </table>
-<?
+<?php
     }
     
     echo "</form>";
@@ -315,7 +315,7 @@ if ($host_data)
   }
 ?>
 
-<form name=save action="edithost.php?id=<?=$id?>" method="post">
+<form name=save action="edithost.php?id=<?php=$id?>" method="post">
 <table id="savetable" align=center>
     <thead>
     	<tr>
@@ -325,20 +325,20 @@ if ($host_data)
             <th scope="col" class="rounded-q1">MH/s desired</th>
         </tr>
         <tr>
-          <td align=center><input type="text" name="macname" value="<?=$host_data['name']?>"></td>
-          <td align=center><input type="text" name="ipaddress" value="<?=$host_data['address']?>"></td>
-          <td align=center><input type="text" name="port" value="<?=$host_data['port']?>"></td>
-          <td align=center><input type="text" name="mhash" value="<?=$host_data['mhash_desired']?>"></td>
+          <td align=center><input type="text" name="macname" value="<?php=$host_data['name']?>"></td>
+          <td align=center><input type="text" name="ipaddress" value="<?php=$host_data['address']?>"></td>
+          <td align=center><input type="text" name="port" value="<?php=$host_data['port']?>"></td>
+          <td align=center><input type="text" name="mhash" value="<?php=$host_data['mhash_desired']?>"></td>
         </tr>
         <tr>
-        <td colspan=4 align=center><input type=hidden name="savehostid" value="<?=$id?>"><input type="submit" value="Save" name="save"><input type="submit" value="Delete this host" name="delete"></td>
+        <td colspan=4 align=center><input type=hidden name="savehostid" value="<?php=$id?>"><input type="submit" value="Save" name="save"><input type="submit" value="Delete this host" name="delete"></td>
         </tr>
     </thead>
 </table>
 
 </form>
 
-<?	
+<?php	
 }
 else {
 	echo "Host not found or you just deleted the host !<BR>";
@@ -359,7 +359,7 @@ else {
 
 <div id="templatemo_footer_wrapper">
     <div id="templatemo_footer">
-        <? include("footer.inc.php"); ?>
+        <?php include("footer.inc.php"); ?>
         <div class="cleaner"></div>
     </div>
 </div> 

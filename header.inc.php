@@ -1,4 +1,4 @@
-<?
+<?php
 $pages = array("Home" => "index.php",
              "Accounts" => "accounts.php",
              "Configuration" => "config.php",
@@ -13,7 +13,7 @@ $page = substr($_SERVER["SCRIPT_NAME"],strrpos($_SERVER["SCRIPT_NAME"],"/")+1);
 
     <div id="templatemo_menu" class="ddsmoothmenu">
       <ul>
-<?
+<?php
       foreach ($pages as $key => $value)
       {
         if  ($value == $page)

@@ -1,4 +1,4 @@
-<?
+<?php
 require("config.inc.php");
 require("func.inc.php");
 
@@ -166,7 +166,7 @@ ddsmoothmenu.init({
 $(function()
 {
   $( "#gpuclk_slider" ).slider({
-    value: <?=$gpu_data_array['GPU Clock']?>,
+    value: <?php=$gpu_data_array['GPU Clock']?>,
     min: 100,
     max: 1500,
     step: 5,
@@ -179,7 +179,7 @@ $(function()
   $( "#gpuclk_dro" ).val($( "#gpuclk_slider" ).slider( "value" ) );
   
   $( "#memclk_slider" ).slider({
-    value: <?=$gpu_data_array['Memory Clock']?>,
+    value: <?php=$gpu_data_array['Memory Clock']?>,
     min: 100,
     max: 1500,
     step: 5,
@@ -192,7 +192,7 @@ $(function()
   $( "#memclk_dro" ).val($( "#memclk_slider" ).slider( "value" ) );
   
   $( "#gpuvolt_slider" ).slider({
-    value: <?=$gpu_data_array['GPU Voltage']?>,
+    value: <?php=$gpu_data_array['GPU Voltage']?>,
     min: 0.5,
     max: 1.5,
     step: 0.01,
@@ -205,7 +205,7 @@ $(function()
   $( "#gpuvolt_dro" ).val($( "#gpuvolt_slider" ).slider( "value" ) );
   
   $( "#gpufan_slider" ).slider({
-    value: <?=$gpu_data_array['Fan Percent']?>,
+    value: <?php=$gpu_data_array['Fan Percent']?>,
     min: 0,
     max: 100,
     step: 1,
@@ -217,12 +217,12 @@ $(function()
   });
   $( "#gpufan_dro" ).val($( "#gpufan_slider" ).slider( "value" ) );
   
-  <?
+  <?php
   $intensity = ($gpu_data_array['Intensity'] == 'D') ? -1 : $gpu_data_array['Intensity'];
   ?>
   
   $( "#intensity_slider" ).slider({
-    value: <?=$intensity?>,
+    value: <?php=$intensity?>,
     min: -1,
     max: 15,
     step: 1,
@@ -245,14 +245,14 @@ $(function()
 
 <div id="templatemo_wrapper">
 
-<? include ('header.inc.php'); ?>
+<?php include ('header.inc.php'); ?>
     
     <div id="templatemo_main">
         <div class="col_fw">
             <div class="templatemo_megacontent">
                 <h2>Device detail</h2>
                 <div class="cleaner h20"></div>
-<?
+<?php
 
 if ($host_data)
 {
@@ -291,12 +291,12 @@ if ($host_data)
   if ($privileged && ($type == 'GPU'))
   {
 ?>
-<form name='apply' action='editdev.php?id=<?=$id?>&dev=<?=$dev?>&type=<?=$type?>' method='post'>
+<form name='apply' action='editdev.php?id=<?php=$id?>&dev=<?php=$dev?>&type=<?php=$type?>' method='post'>
 <table id='rounded-corner' summary='DevsControl' align='center'>
 <thead>
     <tr>
       <th width='20' scope='col' class='rounded-q1'>Set</th>
-      <th colspan='3' scope='col' class='rounded-q1'> Edit settings below for <?=$type?> <?=$dev?> on <?=$host_data['name']?></th>
+      <th colspan='3' scope='col' class='rounded-q1'> Edit settings below for <?php=$type?> <?php=$dev?> on <?php=$host_data['name']?></th>
     </tr>
 </thead>
 <tr>
@@ -350,7 +350,7 @@ if ($host_data)
         <input type='submit' value='Apply Settings' name='apply'><br>
     </th>
   </tr>
-<?
+<?php
     if (isset($_POST['apply']))
     {
       for ($i=0; $i<5; $i++)
@@ -377,7 +377,7 @@ if ($host_data)
 </thead>
 </table>
 </form>
-<?
+<?php
   }
 }
 else 
@@ -400,7 +400,7 @@ else
 
 <div id="templatemo_footer_wrapper">
     <div id="templatemo_footer">
-        <? include("footer.inc.php"); ?>
+        <?php include("footer.inc.php"); ?>
         <div class="cleaner"></div>
     </div>
 </div> 

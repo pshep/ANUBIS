@@ -1,4 +1,4 @@
-<?
+<?php
 require("config.inc.php");
 require("acc.inc.php");
 
@@ -104,7 +104,7 @@ ddsmoothmenu.init({
 <body>
 <div id="templatemo_wrapper">
 
-<? include ('header.inc.php'); ?>
+<?php include ('header.inc.php'); ?>
 
     <div id="templatemo_main">
     	<div class="col_fw">
@@ -112,7 +112,7 @@ ddsmoothmenu.init({
             	<h2>Accounts</h2>
                 <div class="cleaner h20"></div>
 
-<?
+<?php
 
 
 $grp_result = $dbh->query("SELECT * FROM accgroups ORDER BY name ASC");
@@ -161,7 +161,7 @@ foreach($mtgox_currencys as $symbol)
         </tr>
         <tr>
           <td align=center><input type="text" name="name" value=""></td>
-          <td align=center><select name="currency"><?=$currency_list?><select></td>
+          <td align=center><select name="currency"><?php=$currency_list?><select></td>
           <td colspan=2 align=center><input type="submit" value="Add new group" name="addgroup"></td>
         </tr>
     </thead>
@@ -184,7 +184,7 @@ foreach($mtgox_currencys as $symbol)
 
 <div id="templatemo_footer_wrapper">
     <div id="templatemo_footer">
-        <? include("footer.inc.php"); ?>
+        <?php include("footer.inc.php"); ?>
         <div class="cleaner"></div>
     </div>
 </div> 

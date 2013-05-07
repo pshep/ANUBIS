@@ -1,4 +1,4 @@
-<?
+<?php
 require("config.inc.php");
 require("func.inc.php");
 
@@ -75,7 +75,7 @@ ddsmoothmenu.init({
 
 <div id="templatemo_wrapper">
 
-<? include ('header.inc.php'); ?>
+<?php include ('header.inc.php'); ?>
     
     <div id="templatemo_main">
     	<div class="col_fw">
@@ -83,7 +83,7 @@ ddsmoothmenu.init({
             	<h2>Add host</h2>
 
                 <div class="cleaner h20"></div>
-<?
+<?php
 if (isset($id)) 
 {
   if ($host_data)
@@ -125,7 +125,7 @@ if (isset($id))
         <td align=center><input type="text" name="mhash" value=""></td>
         </tr>
         <tr>
-        <td colspan=4 align=center><input type=hidden name="savehostid" value="<?=$id?>"><input type="submit" value="Save"></td>
+        <td colspan=4 align=center><input type=hidden name="savehostid" value="<?php=$id?>"><input type="submit" value="Save"></td>
         </tr>
     </thead>
 </table>
@@ -156,7 +156,7 @@ You can change any value afterwards.<BR>
 
 <div id="templatemo_footer_wrapper">
     <div id="templatemo_footer">
-        <? include("footer.inc.php"); ?>
+        <?php include("footer.inc.php"); ?>
         <div class="cleaner"></div>
     </div>
 </div> 

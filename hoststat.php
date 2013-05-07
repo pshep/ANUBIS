@@ -1,4 +1,4 @@
-<?
+<?php
 require("config.inc.php");
 require("func.inc.php");
 
@@ -133,15 +133,15 @@ ddsmoothmenu.init({
 
 <div id="templatemo_wrapper">
 
-<? include ('header.inc.php'); ?>
+<?php include ('header.inc.php'); ?>
 
     <div id="templatemo_main">
     	<div class="col_fw">
         	<div class="templatemo_megacontent">
             	<h2>Host Stats</h2>
-				 <a href="edithost.php?id=<?=$id?>">Back to host details</a>
+				 <a href="edithost.php?id=<?php=$id?>">Back to host details</a>
                 <div class="cleaner h20"></div>
-<?
+<?php
 if ($host_data && $host_alive)
 {
   echo "<form name=pool action='hoststat.php?id=".$id."' method='post'>";
@@ -249,7 +249,7 @@ else {
 
 <div id="templatemo_footer_wrapper">
     <div id="templatemo_footer">
-        <? include("footer.inc.php"); ?>
+        <?php include("footer.inc.php"); ?>
         <div class="cleaner"></div>
     </div>
 </div> 

@@ -1,4 +1,4 @@
-<?
+<?php
 
 $dbdatabase = "anubis_db";
 
