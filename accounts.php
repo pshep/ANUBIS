@@ -161,7 +161,7 @@ foreach($mtgox_currencys as $symbol)
         </tr>
         <tr>
           <td align=center><input type="text" name="name" value=""></td>
-          <td align=center><select name="currency"><?php=$currency_list?><select></td>
+          <td align=center><select name="currency"><?php echo $currency_list; ?><select></td>
           <td colspan=2 align=center><input type="submit" value="Add new group" name="addgroup"></td>
         </tr>
     </thead>

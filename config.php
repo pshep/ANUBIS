@@ -179,52 +179,52 @@ echo "<b>Configuration updated !</b>";
         </tr>
         <tr>
         <td class="blue">GPU Temperature</td>
-        <td><input type=text name="yellowtemp" value="<?php=$config->yellowtemp?>"></td>
-        <td><input type=text name="maxtemp" value="<?php=$config->maxtemp?>"></td>
+        <td><input type=text name="yellowtemp" value="<?php echo $config->yellowtemp; ?>"></td>
+        <td><input type=text name="maxtemp" value="<?php echo $config->maxtemp; ?>"></td>
         </tr>
         <tr>
         <td class="blue">Rejects</td>
-        <td><input type=text name="yellowrejects" value="<?php=$config->yellowrejects?>"></td>
-        <td><input type=text name="maxrejects" value="<?php=$config->maxrejects?>"></td>        
+        <td><input type=text name="yellowrejects" value="<?php echo $config->yellowrejects; ?>"></td>
+        <td><input type=text name="maxrejects" value="<?php echo $config->maxrejects; ?>"></td>        
         </tr>
         <tr>
         <td class="blue">Discards</td>
-        <td><input type=text name="yellowdiscards" value="<?php=$config->yellowdiscards?>"></td>
-        <td><input type=text name="maxdiscards" value="<?php=$config->maxdiscards?>"></td>        
+        <td><input type=text name="yellowdiscards" value="<?php echo $config->yellowdiscards; ?>"></td>
+        <td><input type=text name="maxdiscards" value="<?php echo $config->maxdiscards; ?>"></td>        
         </tr>
         <tr>
         <td class="blue">Stales</td>
-        <td><input type=text name="yellowstales" value="<?php=$config->yellowstales?>"></td>
-        <td><input type=text name="maxstales" value="<?php=$config->maxstales?>"></td>        
+        <td><input type=text name="yellowstales" value="<?php echo $config->yellowstales; ?>"></td>
+        <td><input type=text name="maxstales" value="<?php echo $config->maxstales;"></td>        
         </tr>
         <tr>
         <td class="blue">Get Fails</td>
-        <td><input type=text name="yellowgetfails" value="<?php=$config->yellowgetfails?>"></td>
-        <td><input type=text name="maxgetfails" value="<?php=$config->maxgetfails?>"></td>        
+        <td><input type=text name="yellowgetfails" value="<?php echo $config->yellowgetfails; ?>"></td>
+        <td><input type=text name="maxgetfails" value="<?php echo $config->maxgetfails; ?>"></td>        
         </tr>    
         <tr>  
         <td class="blue">Rem Fails</td>
-        <td><input type=text name="yellowremfails" value="<?php=$config->yellowremfails?>"></td>
-        <td><input type=text name="maxremfails" value="<?php=$config->maxremfails?>"></td>        
+        <td><input type=text name="yellowremfails" value="<?php echo $config->yellowremfails; ?>"></td>
+        <td><input type=text name="maxremfails" value="<?php echo $config->maxremfails; ?>"></td>        
         </tr> 
         <tr>
         <td class="blue">Fan Percent</td>
-        <td><input type=text name="yellowfan" value="<?php=$config->yellowfan?>"></td>
-        <td><input type=text name="maxfan" value="<?php=$config->maxfan?>"></td>        
+        <td><input type=text name="yellowfan" value="<?php echo $config->yellowfan; ?>"></td>
+        <td><input type=text name="maxfan" value="<?php echo $config->maxfan; ?>"></td>        
         </tr>
         <tr>
         <td class="blue">min. % of desired 5s MH/s</td>
-        <td><input type=text name="yellowgessper" value="<?php=$config->yellowgessper?>"></td>
-        <td><input type=text name="maxgessper" value="<?php=$config->maxgessper?>"></td>        
+        <td><input type=text name="yellowgessper" value="<?php echo $config->yellowgessper; ?>"></td>
+        <td><input type=text name="maxgessper" value="<?php echo $config->maxgessper; ?>"></td>        
         </tr>
         <tr>
         <td class="blue">min. % of desired average MH/s</td>
-        <td><input type=text name="yellowavgmhper" value="<?php=$config->yellowavgmhper?>"></td>
-        <td><input type=text name="maxavgmhper" value="<?php=$config->maxavgmhper?>"></td>        
+        <td><input type=text name="yellowavgmhper" value="<?php echo $config->yellowavgmhper; ?>"></td>
+        <td><input type=text name="maxavgmhper" value="<?php echo $config->maxavgmhper; ?>"></td>        
         </tr>
         <tr>
         <td class="blue">E-Mail Address for Notifications</td>
-        <td colspan=2><input type=text name="email" value="<?php=$config->email?>"></td>
+        <td colspan=2><input type=text name="email" value="<?php echo $config->email; ?>"></td>
         </tr>        
         <tr>
         <td colspan="3" class="blue"><input type=submit name=saveconf value="Save"></td>

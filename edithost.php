@@ -261,7 +261,7 @@ if ($host_data)
           <tr>
             <th colspan="13">
             Configuration file path (blank for default):
-            <input type="text" name="confpath" value="<?php=$host_data['conf_file_path']?>">
+            <input type="text" name="confpath" value="<?php echo $host_data['conf_file_path']; ?>">
             <input type="submit" value="Save Configuration" name="saveconf">
           </th>
         </tr>
@@ -315,7 +315,7 @@ if ($host_data)
   }
 ?>
 
-<form name=save action="edithost.php?id=<?php=$id?>" method="post">
+<form name=save action="edithost.php?id=<?php echo $id; ?>" method="post">
 <table id="savetable" align=center>
     <thead>
     	<tr>
@@ -325,13 +325,13 @@ if ($host_data)
             <th scope="col" class="rounded-q1">MH/s desired</th>
         </tr>
         <tr>
-          <td align=center><input type="text" name="macname" value="<?php=$host_data['name']?>"></td>
-          <td align=center><input type="text" name="ipaddress" value="<?php=$host_data['address']?>"></td>
-          <td align=center><input type="text" name="port" value="<?php=$host_data['port']?>"></td>
-          <td align=center><input type="text" name="mhash" value="<?php=$host_data['mhash_desired']?>"></td>
+          <td align=center><input type="text" name="macname" value="<?php echo $host_data['name']; ?>"></td>
+          <td align=center><input type="text" name="ipaddress" value="<?php echo $host_data['address']; ?>"></td>
+          <td align=center><input type="text" name="port" value="<?php echo $host_data['port']; ?>"></td>
+          <td align=center><input type="text" name="mhash" value="<?php echo $host_data['mhash_desired']; ?>"></td>
         </tr>
         <tr>
-        <td colspan=4 align=center><input type=hidden name="savehostid" value="<?php=$id?>"><input type="submit" value="Save" name="save"><input type="submit" value="Delete this host" name="delete"></td>
+        <td colspan=4 align=center><input type=hidden name="savehostid" value="<?php echo $id; ?>"><input type="submit" value="Save" name="save"><input type="submit" value="Delete this host" name="delete"></td>
         </tr>
     </thead>
 </table>

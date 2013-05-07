@@ -166,7 +166,7 @@ ddsmoothmenu.init({
 $(function()
 {
   $( "#gpuclk_slider" ).slider({
-    value: <?php=$gpu_data_array['GPU Clock']?>,
+    value: <?php echo $gpu_data_array['GPU Clock']; ?>,
     min: 100,
     max: 1500,
     step: 5,
@@ -179,7 +179,7 @@ $(function()
   $( "#gpuclk_dro" ).val($( "#gpuclk_slider" ).slider( "value" ) );
   
   $( "#memclk_slider" ).slider({
-    value: <?php=$gpu_data_array['Memory Clock']?>,
+    value: <?php echo $gpu_data_array['Memory Clock']; ?>,
     min: 100,
     max: 1500,
     step: 5,
@@ -192,7 +192,7 @@ $(function()
   $( "#memclk_dro" ).val($( "#memclk_slider" ).slider( "value" ) );
   
   $( "#gpuvolt_slider" ).slider({
-    value: <?php=$gpu_data_array['GPU Voltage']?>,
+    value: <?php echo $gpu_data_array['GPU Voltage']; ?>,
     min: 0.5,
     max: 1.5,
     step: 0.01,
@@ -205,7 +205,7 @@ $(function()
   $( "#gpuvolt_dro" ).val($( "#gpuvolt_slider" ).slider( "value" ) );
   
   $( "#gpufan_slider" ).slider({
-    value: <?php=$gpu_data_array['Fan Percent']?>,
+    value: <?php echo $gpu_data_array['Fan Percent']; ?>,
     min: 0,
     max: 100,
     step: 1,
@@ -222,7 +222,7 @@ $(function()
   ?>
   
   $( "#intensity_slider" ).slider({
-    value: <?php=$intensity?>,
+    value: <?php echo $intensity; ?>,
     min: -1,
     max: 15,
     step: 1,
@@ -291,12 +291,12 @@ if ($host_data)
   if ($privileged && ($type == 'GPU'))
   {
 ?>
-<form name='apply' action='editdev.php?id=<?php=$id?>&dev=<?php=$dev?>&type=<?php=$type?>' method='post'>
+<form name='apply' action='editdev.php?id=<?php echo $id; ?>&dev=<?php echo $dev; ?>&type=<?php echo $type; ?>' method='post'>
 <table id='rounded-corner' summary='DevsControl' align='center'>
 <thead>
     <tr>
       <th width='20' scope='col' class='rounded-q1'>Set</th>
-      <th colspan='3' scope='col' class='rounded-q1'> Edit settings below for <?php=$type?> <?php=$dev?> on <?php=$host_data['name']?></th>
+      <th colspan='3' scope='col' class='rounded-q1'> Edit settings below for <?php echo $type; ?> <?php echo $dev; ?> on <?php echo $host_data['name']; ?></th>
     </tr>
 </thead>
 <tr>

@@ -139,7 +139,7 @@ ddsmoothmenu.init({
     	<div class="col_fw">
         	<div class="templatemo_megacontent">
             	<h2>Host Stats</h2>
-				 <a href="edithost.php?id=<?php=$id?>">Back to host details</a>
+				 <a href="edithost.php?id=<?php echo $id; ?>">Back to host details</a>
                 <div class="cleaner h20"></div>
 <?php
 if ($host_data && $host_alive)

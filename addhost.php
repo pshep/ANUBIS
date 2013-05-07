@@ -125,7 +125,7 @@ if (isset($id))
         <td align=center><input type="text" name="mhash" value=""></td>
         </tr>
         <tr>
-        <td colspan=4 align=center><input type=hidden name="savehostid" value="<?php=$id?>"><input type="submit" value="Save"></td>
+        <td colspan=4 align=center><input type=hidden name="savehostid" value="<?php echo $id; ?>"><input type="submit" value="Save"></td>
         </tr>
     </thead>
 </table>
