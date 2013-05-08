@@ -48,7 +48,7 @@ ddsmoothmenu.init({
     <div id="templatemo_main">
     	<div class="col_fw">
         	<div class="templatemo_megacontent">
-            	<h2>Hosts</h2>
+            	<h2>FAQ</h2>
 				 
                 <div class="cleaner h20"></div>
 
