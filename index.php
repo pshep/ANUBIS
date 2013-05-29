@@ -121,7 +121,7 @@ else
 
 <script>
 $(function() {
-  setInterval(update, 1000);
+  setInterval(update, 5000);
 });
 function update() {
         $('#rounded-corner').load('refresh_hosts.php');

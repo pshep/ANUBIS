@@ -461,7 +461,7 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     if ($dev_data_array != null)
       $devs = process_host_devs($dev_data_array, $activedevs, $fivesmhash, $max_temp);
 
-    $avgmhash =   $summary_data_array['SUMMARY'][0]['MHS av'];
+    $avgmhash =   $summary_data_array['SUMMARY'][0]['MHS av']*1000;
     $accepted =   $summary_data_array['SUMMARY'][0]['Accepted'];
     $rejected =   $summary_data_array['SUMMARY'][0]['Rejected'];
     $discarded =  $summary_data_array['SUMMARY'][0]['Discarded'];
@@ -497,7 +497,7 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     if ($desmhash > 0)
     {
       // Desired Mhash vs. 5s mhash
-      $fivesmhashper = round(100 / $desmhash * $fivesmhash, 1);
+      $fivesmhashper = round(100 / $desmhash * $fivesmhash*1000, 1);
       $fivesmhashcol = set_color_low($fivesmhashper, $config->yellowgessper, $config->maxgessper);
 
       // Desired Mhash vs. avg mhash
