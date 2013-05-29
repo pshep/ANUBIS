@@ -305,31 +305,57 @@ function set_share_colour($shares_array)
 *****************************************************************************/
 function create_host_header()
 {
+global $config;
+//fallback header to SHA-256
   $header =
-    "<thead>
-    	<tr>
-        	<th scope='col' rowspan='2' class='rounded-company'>Address</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>Devs</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>Temp max</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>MH/s des</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>Util</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>MH/s 5s</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>MH/s avg</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>Gets</th>
-            <th scope='col' colspan='2' class='rounded-q1'>Accepted</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>Diff</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>Rej</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>Disc</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>Stales</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>Get Fails</th>
-            <th scope='col' rowspan='2' class='rounded-q1'>Rem Fails</th>
-        </tr>
-        <tr>
-          <th scope='col' class='rounded-q1'>Var</th>
-          <th scope='col' class='rounded-q1'>1</th>
-        </tr>
-      </thead>";
-    
+	"<thead>
+		<tr>
+			<th scope='col' rowspan='2' class='rounded-company'>Address</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>Devs</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>Temp max</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>MH/s des</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>Util</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>MH/s 5s</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>MH/s avg</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>Gets</th>
+			<th scope='col' colspan='2' class='rounded-q1'>Accepted</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>Diff</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>Rej</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>Disc</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>Stales</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>Get Fails</th>
+			<th scope='col' rowspan='2' class='rounded-q1'>Rem Fails</th>
+		</tr>
+		<tr>
+		  <th scope='col' class='rounded-q1'>Var</th>
+		  <th scope='col' class='rounded-q1'>1</th>
+		</tr>
+	  </thead>";
+ if ($config->cointype=='scrypt') {
+	  $header =
+		"<thead>
+				<th scope='col' rowspan='2' class='rounded-company'>Address</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>Devs</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>Temp max</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>KH/s des</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>Util</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>KH/s 5s</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>KH/s avg</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>Gets</th>
+				<th scope='col' colspan='2' class='rounded-q1'>Accepted</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>Diff</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>Rej</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>Disc</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>Stales</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>Get Fails</th>
+				<th scope='col' rowspan='2' class='rounded-q1'>Rem Fails</th>
+			</tr>
+			<tr>
+			  <th scope='col' class='rounded-q1'>Var</th>
+			  <th scope='col' class='rounded-q1'>1</th>
+			</tr>
+		  </thead>";
+		}
     return $header;
 }
 
@@ -461,7 +487,14 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     if ($dev_data_array != null)
       $devs = process_host_devs($dev_data_array, $activedevs, $fivesmhash, $max_temp);
 
-    $avgmhash =   $summary_data_array['SUMMARY'][0]['MHS av']*1000;
+	if ($config->cointype === 'scrypt')
+	{
+		$avgmhash =   $summary_data_array['SUMMARY'][0]['MHS av']*1000;
+	}
+	else
+	{
+		$avgmhash =   $summary_data_array['SUMMARY'][0]['MHS av'];
+	}
     $accepted =   $summary_data_array['SUMMARY'][0]['Accepted'];
     $rejected =   $summary_data_array['SUMMARY'][0]['Rejected'];
     $discarded =  $summary_data_array['SUMMARY'][0]['Discarded'];
@@ -497,13 +530,26 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     if ($desmhash > 0)
     {
       // Desired Mhash vs. 5s mhash
+	if ($config->cointype === 'scrypt')
+	{
       $fivesmhashper = round(100 / $desmhash * $fivesmhash*1000, 1);
+	}
+	else
+	{
+	  $fivesmhashper = round(100 / $desmhash * $fivesmhash, 1);
+	}
+
       $fivesmhashcol = set_color_low($fivesmhashper, $config->yellowgessper, $config->maxgessper);
 
       // Desired Mhash vs. avg mhash
       $avgmhper = round(100 / $desmhash * $avgmhash, 1);
       $avgmhpercol = set_color_low($avgmhper, $config->yellowavgmhper, $config->maxavgmhper);
     }
+
+	if ($config->cointype === 'scrypt')
+	{
+      $fivesmhash = $fivesmhash*1000;
+	}
 
     $tempcol = set_color_high($max_temp, $config->yellowtemp, $config->maxtemp);             // Temperature
     $thisstatuscol = ($thisstatus == "S") ? "class=green" : "class=yellow";                  // host status
@@ -601,6 +647,8 @@ function get_host_summary($host_data)
 *****************************************************************************/
 function create_devs_header()
 {
+global $config;
+//fallback header to SHA-256
 $header =
     "<thead>
     	<tr>
@@ -622,6 +670,30 @@ $header =
             <th scope='col' class='rounded-q1'>Intens</th>
         </tr>
     </thead>";
+
+	if ($config->cointype=='scrypt') {
+	$header =
+		"<thead>
+			<tr>
+				<th scope='col' class='rounded-company'>Dev</th>
+				<th scope='col' class='rounded-q1'>En</th>
+				<th scope='col' class='rounded-q1'>Status</th>
+				<th scope='col' class='rounded-q1'>Temp</th>
+				<th scope='col' class='rounded-q1'>Fan Speed</th>
+				<th scope='col' class='rounded-q1'>GPU Clk</th>
+				<th scope='col' class='rounded-q1'>Mem Clk</th>
+				<th scope='col' class='rounded-q1'>Volt</th>
+				<th scope='col' class='rounded-q1'>Active</th>
+				<th scope='col' class='rounded-q1'>KH/s 5s</th>
+				<th scope='col' class='rounded-q1'>KH/s avg</th>
+				<th scope='col' class='rounded-q1'>Acc</th>
+				<th scope='col' class='rounded-q1'>Rej</th>
+				<th scope='col' class='rounded-q1'>H/W Err</th>
+				<th scope='col' class='rounded-q1'>Util</th>
+				<th scope='col' class='rounded-q1'>Intens</th>
+			</tr>
+		</thead>";
+	}
     
     return $header;
 }
@@ -735,6 +807,15 @@ function process_dev_disp($gpu_data_array, $edit=false)
   }
   
   $diff_1_utill = round($gpu_data_array['Utility']*$gpu_data_array['Difficulty Accepted']/$accepted,2);
+  if ($config->cointype=='scrypt') {
+	  $mhs5s = $gpu_data_array['MHS 5s'] * 1000;
+	  $mhsav = $gpu_data_array['MHS av'] * 1000;
+  }
+  else
+   {
+	  $mhs5s = $gpu_data_array['MHS 5s'];
+	  $mhsav = $gpu_data_array['MHS av'];
+  }
   
   /* form row */
   $row = " <tr>
@@ -743,8 +824,8 @@ function process_dev_disp($gpu_data_array, $edit=false)
   <td $alcol>".$gpu_data_array['Status']."</td>
   <td $tmpcol>".$gpu_data_array['Temperature']."</td>"
   . $GPU_specific1 .
-  "<td>".$gpu_data_array['MHS 5s']."</td>
-  <td>".$gpu_data_array['MHS av']."</td>
+  "<td>".$mhs5s."</td>
+  <td>".$mhsav."</td>
   <td>".$accepted."<BR>".$efficency."</td>
   <td>".$rejected."<BR>".$rejects."</td>
   <td>".$gpu_data_array['Hardware Errors']."</td>
