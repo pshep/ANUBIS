@@ -322,7 +322,7 @@ if ($host_data)
         	<th scope="col" class="rounded-company">Name</th>
             <th scope="col" class="rounded-q1">IP / Hostname</th>
             <th scope="col" class="rounded-q1">Port</th>
-            <th scope="col" class="rounded-q1">MH/s desired</th>
+            <th scope="col" class="rounded-q1"><? if($config->cointype=='scrypt'){echo "KH/s";}else{ echo "MH/s";}?> desired</th>
         </tr>
         <tr>
           <td align=center><input type="text" name="macname" value="<?=$host_data['name']?>"></td>

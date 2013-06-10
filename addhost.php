@@ -3,6 +3,7 @@ require("config.inc.php");
 require("func.inc.php");
 
 $dbh = anubis_db_connect();
+$config = get_config_data();
 
 if (isset($_POST['savehostid']))
 {
@@ -116,7 +117,7 @@ if (isset($id))
         	<th scope="col" class="rounded-company">Name</th>
             <th scope="col" class="rounded-q1">IP / Hostname</th>
             <th scope="col" class="rounded-q1">Port</th>
-            <th scope="col" class="rounded-q1">MH/s desired</th>
+			<th scope="col" class="rounded-q1"><? if($config->cointype=='scrypt'){echo "KH/s";}else{ echo "MH/s";}?> desired</th>
         </tr>
         <tr>
         <td align=center><input type="text" name="macname" value=""></td>
@@ -136,7 +137,7 @@ if (isset($id))
 <b>Name:</b> You can enter any name you like.<BR>
 <b>IP/Hostname:</b> Enter the IP or Hostname of your cgminer cgapi enabled host. I.E. 10.10.1.10 or 192.168.1.10. You can also use FQDN so miner1.mynet.com i.e.<BR>
 <b>Port:</b> The port CGMINER is listening on (default 4028)<BR>
-<b>MH/s desired:</b> If you already now how much MH/s your host will/should make, enter it here.<BR>
+<b><? if($config->cointype=='scrypt'){echo "KH/s";}else{ echo "MH/s";}?> desired:</b> If you already now how much <? if($config->cointype=='scrypt'){echo "KH/s";}else{ echo "MH/s";}?> your host will/should make, enter it here.<BR>
 <BR>
 You can change any value afterwards.<BR>
 </p>

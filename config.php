@@ -6,6 +6,11 @@ $dbh = anubis_db_connect();
 if (isset($_POST['saveconf'])) {
 	$updstring = "";
 
+	if (isset($_POST['cointype'])) {
+		$cointype = $dbh->quote($_POST['cointype']);
+		$updstring = $updstring . " cointype = $cointype, ";
+	}
+
 	if (isset($_POST['yellowtemp'])) {
 		$yellowtemp = $dbh->quote($_POST['yellowtemp']);
 		$updstring = $updstring . " yellowtemp = $yellowtemp, ";
@@ -176,6 +181,10 @@ echo "<b>Configuration updated !</b>";
         	<th scope="col" class="rounded-company">Yellow</th>
             <th scope="col" class="rounded-q1">Red</th>
 
+        </tr>
+        <tr>
+        <td class="blue">Coin Type</td>
+        <td colspan=2><input type=text name="cointype" value="<?=$config->cointype?>"></td>
         </tr>
         <tr>
         <td class="blue">GPU Temperature</td>

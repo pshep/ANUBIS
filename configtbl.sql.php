@@ -1,5 +1,4 @@
 <?
-
 $tblstr = "
 CREATE TABLE IF NOT EXISTS `configuration` (
   `yellowtemp` int(11) NOT NULL,
@@ -20,15 +19,16 @@ CREATE TABLE IF NOT EXISTS `configuration` (
   `yellowgessper` int(11) NOT NULL,
   `maxgessper` int(11) NOT NULL,
   `yellowavgmhper` int(11) NOT NULL,
-  `maxavgmhper` int(11) NOT NULL
+  `maxavgmhper` int(11) NOT NULL,
+  `cointype` varchar(20) NOT NULL
 )".$table_props.";
 ";
 
 $crr = $dbh->query($tblstr);
 db_error();
 
-$instblstr = "INSERT INTO `configuration` (`yellowtemp`, `yellowrejects`, `yellowdiscards`, `yellowstales`, `yellowgetfails`, `yellowremfails`, `maxtemp`, `maxrejects`, `maxdiscards`, `maxstales`, `maxgetfails`, `maxremfails`, `email`, `yellowfan`, `maxfan`, `yellowgessper`, `maxgessper`, `yellowavgmhper`, `maxavgmhper`) VALUES
-(80, 1, 30, 7, 1, 1, 84, 2, 40, 10, 2, 2, 'change@me.com', 85, 90, 95, 90, 95, 90);";
+$instblstr = "INSERT INTO `configuration` (`yellowtemp`, `yellowrejects`, `yellowdiscards`, `yellowstales`, `yellowgetfails`, `yellowremfails`, `maxtemp`, `maxrejects`, `maxdiscards`, `maxstales`, `maxgetfails`, `maxremfails`, `email`, `yellowfan`, `maxfan`, `yellowgessper`, `maxgessper`, `yellowavgmhper`, `maxavgmhper`, `cointype`) VALUES
+(80, 1, 30, 7, 1, 1, 84, 2, 40, 10, 2, 2, 'change@me.com', 85, 90, 95, 90, 95, 90,'SHA-256');";
 
 $cri = $dbh->exec($instblstr);
 db_error();

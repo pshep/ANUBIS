@@ -224,7 +224,7 @@ $(function()
   $( "#intensity_slider" ).slider({
     value: <?=$intensity?>,
     min: -1,
-    max: 15,
+    max: 20,
     step: 1,
     slide: function( event, ui )
     {
@@ -339,7 +339,7 @@ if ($host_data)
   <td width='20' rowspan="2"><input type="checkbox" name="intensity_chk"  id="intensity_chk" value="1"/></td>
   <td>D</td>
   <td align='center'>Set Intensity: <input type="text" name="intensity_dro" id="intensity_dro" style="border:0; font-weight:bold;" size="3" /></td>
-  <td>15</td>
+  <td>20</td>
 </tr>
 <tr>
   <td colspan='3'><div id="intensity_slider"></div></td>
