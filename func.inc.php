@@ -1,4 +1,4 @@
-<?
+<?php
 error_reporting('E_ALL');
 ini_set('display_errors','On'); 
 
@@ -630,8 +630,8 @@ function get_host_summary($host_data)
 
   $host_row = "<tbody><tr>
     <td><table border=0><tr>
-      <td><a href=\"edithost.php?id=$hostid\"><img src=\"images/edit.png\" border=0></a></td>
-      <td><a href=\"edithost.php?id=$hostid\">$name</a></td></td>
+      <td class=\"noline\"><a href=\"edithost.php?id=$hostid\"><img src=\"images/edit.png\" border=0></a></td>
+      <td class=\"noline\"><a href=\"edithost.php?id=$hostid\">$name</a></td></td>
     </tr></table></td>"
     . $host_row .
     "</tr></tbody>";

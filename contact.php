@@ -1,3 +1,7 @@
+<?php
+require("config.inc.php");
+?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -38,12 +42,12 @@ ddsmoothmenu.init({
 
 <div id="templatemo_wrapper">
 
-<? include ('header.inc.php'); ?>
+<?php include ('header.inc.php'); ?>
 
     <div id="templatemo_main">
     	<div class="col_fw">
         	<div class="templatemo_megacontent">
-            	<h2>Hosts</h2>
+            	<h2>Contact/donate</h2>
 				 
                 <div class="cleaner h20"></div>
 
@@ -90,7 +94,7 @@ ddsmoothmenu.init({
 
 <div id="templatemo_footer_wrapper">
     <div id="templatemo_footer">
-        <? include("footer.inc.php"); ?>
+        <?php include("footer.inc.php"); ?>
         <div class="cleaner"></div>
     </div>
 </div> 

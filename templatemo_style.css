@@ -96,6 +96,10 @@ h6 { font-size: 14px; margin: 0 0 5px; padding: 0; }
 	color: #669;
 	text-align: center;
 }
+#rounded-corner td.noline
+{
+        border-top: none;
+}
 #rounded-corner td.green
 {
 	padding: 8px;

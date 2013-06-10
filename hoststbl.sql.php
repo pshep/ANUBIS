@@ -1,4 +1,4 @@
-<?
+<?php
 
 $tblstr = "
 CREATE TABLE IF NOT EXISTS `hosts` (

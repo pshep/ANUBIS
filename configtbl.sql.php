@@ -1,4 +1,5 @@
-<?
+<?php
+
 $tblstr = "
 CREATE TABLE IF NOT EXISTS `configuration` (
   `yellowtemp` int(11) NOT NULL,
