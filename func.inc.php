@@ -1,6 +1,4 @@
 <?php
-error_reporting('E_ALL');
-ini_set('display_errors','On'); 
 
 // Globals
 $host_data = null;
@@ -9,7 +7,7 @@ $privileged = false;
 $data_totals = array('hosts'=>0,
                      'devs'=>0,
                      'activedevs'=>0,
-                     'maxtemp'=>0, 
+                     'maxtemp'=>0,
                      'desmhash'=>0,
                      'utility'=>0,
                      'Wutility'=>0,
@@ -20,12 +18,13 @@ $data_totals = array('hosts'=>0,
                      'Diff1Accepts'=>0, 
                      'rejects'=>0, 
                      'discards'=>0,
-                     'stales'=>0, 
+                     'stales'=>0,
                      'getfails'=>0,
                      'remfails'=>0);
 
 $API_version = 0;
 $CGM_version = "0.0.0";
+$Hash_Method = "sha256";
 $pools_in_use = array();
 $debug_param_arr = array('Silent', 'Quiet', 'Verbose', 'Debug', 'RPCProto', 'PerDevice', 'WorkTime');
 
@@ -123,10 +122,62 @@ function readsockline($socket)
 /*               host_data - host data array from database
 /*  Outputs:     return - data received from host in array format
 *****************************************************************************/
+
+function json_clean_decode($json, $assoc = false, $depth = 512, $options = 0) {
+    // search and remove comments like /* */ and //
+    $json = preg_replace("#(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|([\s\t]//.*)|(^//.*)#", '', $json);
+    $json = utf8_encode($json);
+
+    if(version_compare(phpversion(), '5.4.0', '>=')) {
+        $json = json_decode($json, $assoc, $depth, $options);
+    }
+    elseif(version_compare(phpversion(), '5.3.0', '>=')) {
+        $json = json_decode($json, $assoc, $depth);
+    }
+    else {
+        $json = json_decode($json, $assoc);
+    }
+
+    return $json;
+}
+function add_quotes_to_numbers($string)
+{
+  $pos = 0;
+  
+  // Look for the value seperator
+  while(($pos = strpos($string, ":", $pos)) != FALSE )
+  {
+    $pos++;    
+
+    // test if we have a number following the ':'
+    if (preg_match('/^[0-9]*$/', substr($string, $pos, 1)))
+    {
+      // now add a quotation mark
+      $string_start = substr($string, 0, $pos);
+      $string_end = substr($string, $pos);
+      $string = $string_start . "\"" . $string_end;
+
+      // now find the end of the number 
+      while (preg_match('/^[.0-9]*$/', substr($string, ++$pos, 1)));
+
+      //now add quotation to end of number
+      $string_start = substr($string, 0, $pos);
+      $string_end = substr($string, $pos);
+      $string = $string_start . "\"" . $string_end;
+    }
+    //now forward to next item
+    $pos = strpos($string, ",", $pos);
+    if ($pos == FALSE)
+      break;
+  }
+
+  return $string;
+}
+
 function send_request_to_host($cmd_array, $host_data)
 {
   $socket = getsock($host_data['address'], $host_data['port']);
-  
+
   if ($socket != null)
   {
     $cmd = json_encode($cmd_array);
@@ -138,8 +189,9 @@ function send_request_to_host($cmd_array, $host_data)
     if (strlen($line) == 0)
       return null;
 
+    $line =  add_quotes_to_numbers($line);
     if (substr($line,0,1) == '{')
-      $data = json_decode($line, true);
+      $data = json_clean_decode($line, true);
     else
       return null;
   }
@@ -147,7 +199,6 @@ function send_request_to_host($cmd_array, $host_data)
   {
     return null;
   }
-
   return $data;
 }
 
@@ -162,6 +213,7 @@ function get_host_status($host_data)
 {
   global $API_version;
   global $CGM_version;
+  global $Hash_Method;
 
   $arr = array ('command'=>'version','parameter'=>'');
   $version_arr = send_request_to_host($arr, $host_data);
@@ -172,11 +224,21 @@ function get_host_status($host_data)
     {
       $API_version = $version_arr['VERSION'][0]['API'];
       $CGM_version = $version_arr['VERSION'][0]['CGMiner'];
-      
-      if (version_compare($API_version, 1.0, '>='))
-        return true;
     }
   }
+  
+  // Also get coin type
+  $arr = array ('command'=>'coin','parameter'=>'');
+  $coin_arr = send_request_to_host($arr, $host_data);
+
+  if ($coin_arr)
+    if ($coin_arr['STATUS'][0]['STATUS'] == 'S')
+      $Hash_Method = $coin_arr['COIN'][0]['Hash Method'];
+
+  // Check API version
+  if (version_compare($API_version, 1.0, '>='))
+    return true;
+
   return false;
 }
 
@@ -305,54 +367,47 @@ function set_share_colour($shares_array)
 *****************************************************************************/
 function create_host_header()
 {
-global $config;
+  global $Hash_Method;
 //fallback header to SHA-256
   $header =
 	"<thead>
 		<tr>
-			<th scope='col' rowspan='2' class='rounded-company'>Address</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>Devs</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>Temp max</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>MH/s des</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>Util</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>MH/s 5s</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>MH/s avg</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>Gets</th>
-			<th scope='col' colspan='2' class='rounded-q1'>Accepted</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>Diff</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>Rej</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>Disc</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>Stales</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>Get Fails</th>
-			<th scope='col' rowspan='2' class='rounded-q1'>Rem Fails</th>
-		</tr>
-		<tr>
-		  <th scope='col' class='rounded-q1'>Var</th>
-		  <th scope='col' class='rounded-q1'>1</th>
+			<th scope='col' class='rounded-company'>Address</th>
+			<th scope='col' class='rounded-q1'>Devs</th>
+			<th scope='col' class='rounded-q1'>Temp max</th>
+			<th scope='col' class='rounded-q1'>MH/s des</th>
+			<th scope='col' class='rounded-q1'>Util</th>
+			<th scope='col' class='rounded-q1'>MH/s 5s</th>
+			<th scope='col' class='rounded-q1'>MH/s avg</th>
+			<th scope='col' class='rounded-q1'>Gets</th>
+			<th scope='col' class='rounded-q1'>Accepted</th>
+			<th scope='col' class='rounded-q1'>Diff</th>
+			<th scope='col' class='rounded-q1'>Rej</th>
+			<th scope='col' class='rounded-q1'>Disc</th>
+			<th scope='col' class='rounded-q1'>Stales</th>
+			<th scope='col' class='rounded-q1'>Get Fails</th>
+			<th scope='col' class='rounded-q1'>Rem Fails</th>
 		</tr>
 	  </thead>";
- if ($config->cointype=='scrypt') {
+ if ($Hash_Method =='scrypt') 
+ {
 	  $header =
 		"<thead>
-				<th scope='col' rowspan='2' class='rounded-company'>Address</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>Devs</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>Temp max</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>KH/s des</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>Util</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>KH/s 5s</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>KH/s avg</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>Gets</th>
-				<th scope='col' colspan='2' class='rounded-q1'>Accepted</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>Diff</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>Rej</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>Disc</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>Stales</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>Get Fails</th>
-				<th scope='col' rowspan='2' class='rounded-q1'>Rem Fails</th>
-			</tr>
-			<tr>
-			  <th scope='col' class='rounded-q1'>Var</th>
-			  <th scope='col' class='rounded-q1'>1</th>
+				<th scope='col' class='rounded-company'>Address</th>
+				<th scope='col' class='rounded-q1'>Devs</th>
+				<th scope='col' class='rounded-q1'>Temp max</th>
+				<th scope='col' class='rounded-q1'>KH/s des</th>
+				<th scope='col' class='rounded-q1'>Util</th>
+				<th scope='col' class='rounded-q1'>KH/s 5s</th>
+				<th scope='col' class='rounded-q1'>KH/s avg</th>
+				<th scope='col' class='rounded-q1'>Gets</th>
+				<th scope='col' class='rounded-q1'>Accepted</th>
+				<th scope='col' class='rounded-q1'>Diff</th>
+				<th scope='col' class='rounded-q1'>Rej</th>
+				<th scope='col' class='rounded-q1'>Disc</th>
+				<th scope='col' class='rounded-q1'>Stales</th>
+				<th scope='col' class='rounded-q1'>Get Fails</th>
+				<th scope='col' class='rounded-q1'>Rem Fails</th>
 			</tr>
 		  </thead>";
 		}
@@ -414,6 +469,7 @@ function process_host_info($host_data)
 {
   global $API_version;
   global $CGM_version;
+  global $Hash_Method;
 
   $arr = array ('command'=>'config','parameter'=>'');
   $config_arr = send_request_to_host($arr, $host_data);
@@ -422,12 +478,12 @@ function process_host_info($host_data)
   $summary_arr = send_request_to_host($arr, $host_data);
   
   $up_time = $summary_arr['SUMMARY']['0']['Elapsed'];
-  $days = floor($up_time / 86400);
+  $days = (int) floor($up_time / 86400);
   $up_time -= $days * 86400;
-  $hours = floor($up_time / 3600);
+  $hours = (int) floor($up_time / 3600);
   $up_time -= $hours * 3600;
-  $mins = floor($up_time / 60);
-  $seconds = $up_time - ($mins * 60);
+  $mins = (int) floor($up_time / 60);
+  $seconds = (int) $up_time - ($mins * 60);
   
   $output = "
       <tr>
@@ -436,7 +492,7 @@ function process_host_info($host_data)
         <th>Up time</th>
         <th>Found H/W</th>
         <th>ADL</th>
-        <th>Pools and Strategy</th>
+        <th>Pools</th>
         <th>Supported Devs</th>
         <th>OS</th>
         <th>Scan Time</th>
@@ -444,12 +500,12 @@ function process_host_info($host_data)
         <th>Expiry</th>
       </tr>
       <tr>
-        <td>".$CGM_version."</td>
+        <td>".$CGM_version."<BR>".$Hash_Method."</td>
         <td>".$API_version."</td>
         <td>".$days."d ".$hours."h ".$mins."m ".$seconds."s</td>
-        <td>".$config_arr['CONFIG']['0']['CPU Count']." CPUs, ".$config_arr['CONFIG']['0']['GPU Count']." GPUs, ".$config_arr['CONFIG']['0']['PGA Count']." FPGAs</td>
+        <td>".$config_arr['CONFIG']['0']['GPU Count']." GPUs, ".$config_arr['CONFIG']['0']['PGA Count']." FPGAs, ".$config_arr['CONFIG']['0']['ASC Count']." ASCs<BR>Hotplug: ".$config_arr['CONFIG']['0']['Hotplug']."</td>
         <td>".$config_arr['CONFIG']['0']['ADL in use']."</td>
-        <td>".$config_arr['CONFIG']['0']['Pool Count']." pools, using ".$config_arr['CONFIG']['0']['Strategy']."</td>
+        <td>".$config_arr['CONFIG']['0']['Pool Count']." pools<BR>Using ".$config_arr['CONFIG']['0']['Strategy']."</td>
         <td>".$config_arr['CONFIG']['0']['Device Code']."</td>
         <td>".$config_arr['CONFIG']['0']['OS']."</td>
         <td><input type='text' name='ScanTime_dro' value='".$config_arr['CONFIG']['0']['ScanTime']."' style='border:0;' size='3' /></td>
@@ -474,8 +530,9 @@ function process_host_info($host_data)
 *****************************************************************************/
 function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
 {
-  global $data_totals;
   global $config;
+  global $data_totals;
+  global $Hash_Method;
 
   $devs = $activedevs = $max_temp = $fivesmhash = $fivesmhashper = $avgmhper = 0;
   $fivesmhashcol = $avgmhpercol = $rejectscol = $discardscol = $stalescol = $getfailscol = $remfailscol = "";
@@ -487,39 +544,38 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     if ($dev_data_array != null)
       $devs = process_host_devs($dev_data_array, $activedevs, $fivesmhash, $max_temp);
 
-	if ($config->cointype === 'scrypt')
-	{
-		$avgmhash =   $summary_data_array['SUMMARY'][0]['MHS av']*1000;
-	}
-	else
-	{
-		$avgmhash =   $summary_data_array['SUMMARY'][0]['MHS av'];
-	}
-    $accepted =   $summary_data_array['SUMMARY'][0]['Accepted'];
-    $rejected =   $summary_data_array['SUMMARY'][0]['Rejected'];
-    $discarded =  $summary_data_array['SUMMARY'][0]['Discarded'];
-    $stale =      $summary_data_array['SUMMARY'][0]['Stale'];
-    $getfail =    $summary_data_array['SUMMARY'][0]['Get Failures'];
-    $remfail =    $summary_data_array['SUMMARY'][0]['Remote Failures'];
-    $utility =    $summary_data_array['SUMMARY'][0]['Utility'];
+    if ($Hash_Method == 'scrypt')
+    {
+      $avgmhash =   $summary_data_array['SUMMARY'][0]['MHS av']*1000;
+      $fivesmhash =  $summary_data_array['SUMMARY'][0]['MHS 5s']*1000;
+    }
+    else
+    {
+      $avgmhash =   $summary_data_array['SUMMARY'][0]['MHS av'];
+      $fivesmhash =  $summary_data_array['SUMMARY'][0]['MHS 5s'];
+    }
+
+    $accepted =    $summary_data_array['SUMMARY'][0]['Accepted'];
+    $rejected =    $summary_data_array['SUMMARY'][0]['Rejected'];
+    $discarded =   $summary_data_array['SUMMARY'][0]['Discarded'];
+    $stale =       $summary_data_array['SUMMARY'][0]['Stale'];
+    $getfail =     $summary_data_array['SUMMARY'][0]['Get Failures'];
+    $remfail =     $summary_data_array['SUMMARY'][0]['Remote Failures'];
+    $utility =     $summary_data_array['SUMMARY'][0]['Utility'];
     $Wutility =    $summary_data_array['SUMMARY'][0]['Work Utility'];
     $getworks =    $summary_data_array['SUMMARY'][0]['Getworks'];
     $Diff1Accept = $summary_data_array['SUMMARY'][0]['Difficulty Accepted'];
-    
+
     if (isset($accepted) && $accepted !== 0)
     {
-      $difficulty = round($Diff1Accept/$accepted,2);
+      $difficulty = (int) ($Diff1Accept/$accepted);
       
-      $efficency = round(100 / $getworks * $accepted, 0) . " %";
-      $diff1efficency = round(100 / $getworks * $Diff1Accept, 0) . " %";
-      $rejects = round(100 / ($accepted + $rejected) * $rejected, 1) . " %";
+      $rejects = $summary_data_array['SUMMARY'][0]['Pool Rejected%'] . " %";
       $discards = round(100 / $getworks * $discarded, 1) . " %";
-      $stales = round(100 / $accepted * $stale, 1) . " %";
+      $stales = $summary_data_array['SUMMARY'][0]['Pool Stale%'] . " %";
       $getfails = round(100 / $accepted * $getfail, 1) . " %";
       $remfails = round(100 / $accepted * $remfail, 1) . " %";
-      
-      $Diff1Accept = round($Diff1Accept, 0);
-      
+
       $rejectscol = set_color_high($rejects, $config->yellowrejects, $config->maxrejects);     // Rejects
       $discardscol = set_color_high($discards, $config->yellowdiscards, $config->maxdiscards); // Discards
       $stalescol = set_color_high($stales, $config->yellowstales, $config->maxstales);         // Stales
@@ -530,29 +586,19 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
     if ($desmhash > 0)
     {
       // Desired Mhash vs. 5s mhash
-	if ($config->cointype === 'scrypt')
-	{
-      $fivesmhashper = round(100 / $desmhash * $fivesmhash*1000, 1);
-	}
-	else
-	{
-	  $fivesmhashper = round(100 / $desmhash * $fivesmhash, 1);
-	}
+      if ($Hash_Method == 'scrypt')
+        $fivesmhashper = round(100 / $desmhash * $fivesmhash*1000, 1);
+      else
+        $fivesmhashper = (int) round(100 / $desmhash * $fivesmhash, 1);
 
       $fivesmhashcol = set_color_low($fivesmhashper, $config->yellowgessper, $config->maxgessper);
 
       // Desired Mhash vs. avg mhash
-      $avgmhper = round(100 / $desmhash * $avgmhash, 1);
+      $avgmhper = (int) round(100 / $desmhash * $avgmhash, 1);
       $avgmhpercol = set_color_low($avgmhper, $config->yellowavgmhper, $config->maxavgmhper);
     }
 
-	if ($config->cointype === 'scrypt')
-	{
-      $fivesmhash = $fivesmhash*1000;
-	}
-
     $tempcol = set_color_high($max_temp, $config->yellowtemp, $config->maxtemp);             // Temperature
-    $thisstatuscol = ($thisstatus == "S") ? "class=green" : "class=yellow";                  // host status
     $thisdevcol = ($activedevs == $devs) ? "class=green" : "class=red";                      // active devs
 
 	$row = "
@@ -563,8 +609,7 @@ function process_host_disp($desmhash, $summary_data_array, $dev_data_array)
       <td $fivesmhashcol>$fivesmhash<BR>$fivesmhashper %</td>
       <td $avgmhpercol>$avgmhash<BR>$avgmhper %</td>
       <td>$getworks</td>
-      <td>$accepted<BR>$efficency</td>
-      <td>$Diff1Accept<BR>$diff1efficency</td>
+      <td>$accepted</td>
       <td>$difficulty</td>
       <td $rejectscol>$rejected<BR>$rejects</td>
       <td $discardscol>$discarded<BR>$discards</td>
@@ -647,7 +692,7 @@ function get_host_summary($host_data)
 *****************************************************************************/
 function create_devs_header()
 {
-global $config;
+global $$Hash_Method;
 //fallback header to SHA-256
 $header =
     "<thead>
@@ -671,7 +716,8 @@ $header =
         </tr>
     </thead>";
 
-	if ($config->cointype=='scrypt') {
+	if ($Hash_Method=='scrypt') 
+        {
 	$header =
 		"<thead>
 			<tr>
@@ -710,25 +756,15 @@ function process_dev_disp($gpu_data_array, $edit=false)
   global $config;
   global $id;
   global $privileged;
+  global $Hash_Method;
 
-  $accepted =   $gpu_data_array['Accepted'];
-  $rejected =   $gpu_data_array['Rejected'];
-
-  if (isset($accepted) && $accepted !== 0)
-  {
-    $efficency = round(100 / ($accepted + $rejected) * $accepted, 1) . " %";
-    $rejects = round(100 / ($accepted + $rejected) * $rejected, 1) . " %";
-  }
+  $accepted =  $gpu_data_array['Accepted'];
+  $rejected =  $gpu_data_array['Rejected'];
 
   /* set colors */
   $encol = ($gpu_data_array['Enabled'] == "Y") ? "class=green" : "class=red";                      // Enabled
   $alcol = ($gpu_data_array['Status'] == "Alive") ? "class=green" : "class=red";                   // Alive
   $tmpcol = set_color_high($gpu_data_array['Temperature'], $config->yellowtemp, $config->maxtemp); // Temperature
-  $fancol = set_color_high($gpu_data_array['Fan Percent'], $config->yellowfan, $config->maxfan);   // Fans
-  
-  /* format fan speeds */
-  $fanspeed = ($gpu_data_array['Fan Speed'] == '-1') ? '---' : $gpu_data_array['Fan Speed'];
-  $fanpercent = ($gpu_data_array['Fan Percent'] == '-1') ? '---' : $gpu_data_array['Fan Percent']. " %";
 
   $DEV_cell = '???';
 
@@ -743,12 +779,19 @@ function process_dev_disp($gpu_data_array, $edit=false)
 
   $button = $gpu_data_array['Enabled'];
   
+  $button_disable = "";
   if(($gpu_data_array['Status'] != "Alive"))
     $button_disable = " disabled='disabled'";
 
   /* format DEV number */
   if (isset($gpu_data_array['GPU']))
   {
+    $fancol = set_color_high($gpu_data_array['Fan Percent'], $config->yellowfan, $config->maxfan);   // Fans
+
+    /* format fan speeds */
+    $fanspeed = ($gpu_data_array['Fan Speed'] == '-1') ? '---' : $gpu_data_array['Fan Speed'];
+    $fanpercent = ($gpu_data_array['Fan Percent'] == '-1') ? '---' : $gpu_data_array['Fan Percent']. " %";
+
     if ($privileged)
     {
       /* show buttons if selected */
@@ -801,22 +844,32 @@ function process_dev_disp($gpu_data_array, $edit=false)
 
     $DEV_cell = $gpu_data_array['Name'] . $gpu_data_array['PGA'];
   }
-  else if (isset($gpu_data_array['CPU']))
+  else if (isset($gpu_data_array['ASC']))
   {
-    $DEV_cell = $gpu_data_array['Name'] . $gpu_data_array['CPU'];
+    if ($privileged)
+    {
+      if(($gpu_data_array['Enabled'] == "Y"))
+        $button = "<button type='submit' name='stopasc' value='".$gpu_data_array['ASC'].$button_disable."'>Stop</button>";
+      else
+        $button = "<button type='submit' name='startasc' value='".$gpu_data_array['ASC'].$button_disable."'>Start</button>";
+    }
+
+    $DEV_cell = $gpu_data_array['Name'] . $gpu_data_array['ASC'];
   }
-  
-  $diff_1_utill = round($gpu_data_array['Utility']*$gpu_data_array['Difficulty Accepted']/$accepted,2);
-  if ($config->cointype=='scrypt') {
-	  $mhs5s = $gpu_data_array['MHS 5s'] * 1000;
-	  $mhsav = $gpu_data_array['MHS av'] * 1000;
+
+  $diff_1_utill = (int) round( $gpu_data_array['Utility'] * $gpu_data_array['Difficulty Accepted'] /  $accepted, 0);
+
+  if ($Hash_Method=='scrypt') 
+  {
+    $mhs5s =  $gpu_data_array['MHS 5s'] * 1000;
+    $mhsav = $gpu_data_array['MHS av'] * 1000;
   }
   else
-   {
-	  $mhs5s = $gpu_data_array['MHS 5s'];
-	  $mhsav = $gpu_data_array['MHS av'];
+  {
+    $mhs5s = $gpu_data_array['MHS 5s'];
+    $mhsav = $gpu_data_array['MHS av'];
   }
-  
+
   /* form row */
   $row = " <tr>
   <td>".$DEV_cell."</td>
@@ -826,9 +879,9 @@ function process_dev_disp($gpu_data_array, $edit=false)
   . $GPU_specific1 .
   "<td>".$mhs5s."</td>
   <td>".$mhsav."</td>
-  <td>".$accepted."<BR>".$efficency."</td>
-  <td>".$rejected."<BR>".$rejects."</td>
-  <td>".$gpu_data_array['Hardware Errors']."</td>
+  <td>".$accepted."</td>
+  <td>".$rejected."<BR>".$gpu_data_array['Device Rejected%']."%</td>
+  <td>".$gpu_data_array['Hardware Errors']."<BR>".$gpu_data_array['Device Hardware%']."%</td>
   <td>".$gpu_data_array['Utility']."<BR>(".$diff_1_utill.")</td>"
   . $GPU_specific2 .
   "</tr>";
@@ -876,17 +929,17 @@ function process_devs_disp($host_data, $edit=false)
 *****************************************************************************/
 function get_dev_data($host_data, $devid, $type)
 {
-  if ($type == 'CPU')
-  {
-    $cmnd = 'cpu';
-  }
-  else if ($type == 'GPU')
+  if ($type == 'GPU')
   {
     $cmnd = 'gpu';
   }
   else if ($type == 'PGA')
   {
     $cmnd = 'pga';
+  }
+  else if ($type == 'ASC')
+  {
+    $cmnd = 'asc';
   }
 
   $arr = array ('command'=>$cmnd,'parameter'=>$devid);
@@ -906,21 +959,17 @@ function create_pool_header()
   $header =
     "<thead>
     <tr>
-      <th scope='col' rowspan='2' class='rounded-company'>Pool</th>
-      <th scope='col' rowspan='2'  class='rounded-q1'>Priority</th>
-      <th scope='col' rowspan='2'  class='rounded-q1' colspan='2'>URL</th>
-      <th scope='col' rowspan='2'  class='rounded-q1'>Gets</th>
-      <th scope='col' class='rounded-q1' colspan='2'>Accepts</th>
-      <th scope='col' rowspan='2'  class='rounded-q1'>Diff</th>
-      <th scope='col' rowspan='2'  class='rounded-q1'>Rejects</th>
-      <th scope='col' rowspan='2'  class='rounded-q1'>Discards</th>
-      <th scope='col' rowspan='2'  class='rounded-q1'>Stales</th>
-      <th scope='col' rowspan='2'  class='rounded-q1'>Get Fails</th>
-      <th scope='col' rowspan='2'  class='rounded-q1'>Rem fails</th>
-      </tr>
-      <tr>
-      <th scope='col' class='rounded-q1'>Var Diff</th>
-      <th scope='col' class='rounded-q1'>Diff 1</th>
+      <th scope='col' class='rounded-company'>Pool</th>
+      <th scope='col' class='rounded-q1'>Priority</th>
+      <th scope='col' class='rounded-q1' colspan='2'> User / URL</th>
+      <th scope='col' class='rounded-q1'>Gets</th>
+      <th scope='col' class='rounded-q1'>Accepts</th>
+      <th scope='col' class='rounded-q1'>Diff</th>
+      <th scope='col' class='rounded-q1'>Rejects</th>
+      <th scope='col' class='rounded-q1'>Discards</th>
+      <th scope='col' class='rounded-q1'>Stales</th>
+      <th scope='col' class='rounded-q1'>Get Fails</th>
+      <th scope='col' class='rounded-q1'>Rem fails</th>
       </tr>
     </thead>";
 
@@ -943,29 +992,27 @@ function process_pool_disp($pool_data_array, $edit=false)
   $fivesmhashcol = $avgmhpercol = $rejectscol = $discardscol = $stalescol = $getfailscol = $remfailscol = "";
   $rejects = $discards = $stales = $getfails = $remfails = '---';
 
-  $getworks =   $pool_data_array['Getworks'];
-  $accepted =   $pool_data_array['Accepted'];
-  $rejected =   $pool_data_array['Rejected'];
-  $discarded =  $pool_data_array['Discarded'];
-  $stale =      $pool_data_array['Stale'];
-  $getfail =    $pool_data_array['Get Failures'];
-  $remfail =    $pool_data_array['Remote Failures'];
-  $Diff1Accept = $pool_data_array['Difficulty Accepted'];
+  $getworks =    (int) $pool_data_array['Getworks'];
+  $accepted =    (int) $pool_data_array['Accepted'];
+  $rejected =    (int)  $pool_data_array['Rejected'];
+  $discarded =   (int)  $pool_data_array['Discarded'];
+  $stale =       (int)  $pool_data_array['Stale'];
+  $getfail =     (int) $pool_data_array['Get Failures'];
+  $remfail =     (int) $pool_data_array['Remote Failures'];
+  $Diff1Accept = (int) $pool_data_array['Difficulty Accepted'];
 
   /* set shares colours */
   if (isset($accepted) && $accepted !== 0)
   {
-    $difficulty = round($Diff1Accept/$accepted,2);  
+    $difficulty = (int) $pool_data_array['Last Share Difficulty'];
     
-    $efficency = round(100 / $getworks * $accepted, 0) . " %";
-    $diff1efficency = round(100 / $getworks * $Diff1Accept, 0) . " %";
-    $rejects = round(100 / ($accepted + $rejected) * $rejected, 1) . " %";
-    $discards = round(100 / $accepted * $discarded, 1) . " %";
-    $stales = round(100 / $accepted * $stale, 1) . " %";
-    $getfails = round(100 / $accepted * $getfail, 1) . " %";
-    $remfails = round(100 / $accepted * $remfail, 1) . " %";
+    $rejects = $pool_data_array['Pool Rejected%'] . " %";
+    $discards = round(100 /  $accepted *  $discarded, 1) . " %";
+    $stales = $pool_data_array['Pool Stale%'] . " %";
+    $getfails = round(100 /  $accepted *  $getfail, 1) . " %";
+    $remfails = round(100 /  $accepted *  $remfail, 1) . " %";
 
-    $Diff1Accept = round($Diff1Accept, 0);
+    $Diff1Accept = $Diff1Accept;
     
     $rejectscol = set_color_high($rejects, $config->yellowrejects, $config->maxrejects);      // Rejects
     $discardscol = set_color_high($discards, $config->yellowdiscards, $config->maxdiscards);  // Discards
@@ -1000,20 +1047,20 @@ function process_pool_disp($pool_data_array, $edit=false)
     if (version_compare($API_version, 1.7, '>='))
       $start_stop_button .= "<button type='submit' name='rempool' value='".$pool_data_array['POOL']."'>Delete</button>";
   }
-  
+
   /*Set in-use colour */
   $poolcol = "";
   if ($pools_in_use[$pool_data_array['POOL']] == true)
     $poolcol = "class=green";
-    
+
+
   $row = "<tr>
   <td $poolcol>".$pool_data_array['POOL']."</td>
   <td>".$pool_data_array['Priority'].$top_button."</td>
-  <td $alcol>".$pool_data_array['URL']."</td>
+  <td $alcol>".$pool_data_array['User']."<BR>".$pool_data_array['URL']."</td>
   <td $alcol>".$start_stop_button ."</td>
   <td>".$getworks."</td>
-  <td>".$accepted."<BR>".$efficency."</td>
-  <td>".$Diff1Accept."<BR>".$diff1efficency."</td>
+  <td>".$accepted."</td>
   <td>$difficulty</td>
   <td $rejectscol>".$rejected."<BR>".$rejects."</td>
   <td $discardscol>".$discarded."<BR>".$discards."</td>
@@ -1075,13 +1122,12 @@ function create_totals()
             <th scope='col' class='rounded-q1'>".$data_totals['devs']."/".$data_totals['activedevs']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['maxtemp']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['desmhash']."</th>
-            <th scope='col' class='rounded-q1'>".$data_totals['utility']."<BR>(".$data_totals['Wutility'].")</th>
-            <th scope='col' class='rounded-q1'>".$data_totals['fivesmhash']."</th>
-            <th scope='col' class='rounded-q1'>".$data_totals['avemhash']."</th>
+            <th scope='col' class='rounded-q1'>".(int) $data_totals['utility']."<BR>(".(int) $data_totals['Wutility'].")</th>
+            <th scope='col' class='rounded-q1'>".(int) $data_totals['fivesmhash']."</th>
+            <th scope='col' class='rounded-q1'>".(int) $data_totals['avemhash']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['getworks']."</th>
             <th scope='col' class='rounded-q1'>".$data_totals['VarDiffAccepts']."</th>
-            <th scope='col' class='rounded-q1'>".$data_totals['Diff1Accepts']."</th>
-            <th scope='col' class='rounded-q1'>".$difficulty."</th>
+            <th scope='col' class='rounded-q1'>".(int) $difficulty."</th>
             <th scope='col' class='rounded-q1'>".$sumrejects." %</th>
             <th scope='col' class='rounded-q1'>".$sumdiscards." %</th>
             <th scope='col' class='rounded-q1'>".$sumstales." %</th>
@@ -1227,10 +1273,12 @@ function create_devdetails_header()
 function process_devdetails_disp($dev_data_array)
 {
   $button = '';
-  
-  if ($dev_data_array['Name'] == 'BFL')      
+
+  if ($dev_data_array['Name'] == 'BFL')
   	$button = " &nbsp;<button type='submit' name='flashpga' value='".$dev_data_array['ID']."'>Blink</button>";
-  
+  if ($dev_data_array['Name'] == 'BAS')
+   	$button = " &nbsp;<button type='submit' name='flashasc' value='".$dev_data_array['ID']."'>Blink</button>";
+
   $row = "<tr>
   <td>".$dev_data_array['Name'] . $dev_data_array['ID'] . $button ."</td>
   <td>".$dev_data_array['Driver']."</td>

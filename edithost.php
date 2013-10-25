@@ -49,6 +49,30 @@ if($host_data = get_host_data($id))
   
     if ($privileged)
     {
+      if (isset($_POST['startasc']))
+      {
+        $asc_id = filter_input(INPUT_POST, 'startasc', FILTER_SANITIZE_NUMBER_INT);
+        $arr = array ('command'=>'ascenable','parameter'=>$asc_id);
+        $dev_response = send_request_to_host($arr, $host_data);
+        sleep(2);
+      }
+
+      if (isset($_POST['stopasc']))
+      {
+        $asc_id = filter_input(INPUT_POST, 'stopasc', FILTER_SANITIZE_NUMBER_INT);
+        $arr = array ('command'=>'ascdisable','parameter'=>$asc_id);
+        $dev_response = send_request_to_host($arr, $host_data);
+        sleep(2);
+      }
+      
+      if (isset($_POST['flashasc']))
+      {
+      	$asc_id = filter_input(INPUT_POST, 'flashasc', FILTER_SANITIZE_NUMBER_INT);
+      	$arr = array ('command'=>'ascidentify','parameter'=>$asc_id);
+      	$dev_response = send_request_to_host($arr, $host_data);
+      	sleep(2);
+      }
+
       if (isset($_POST['startpga']))
       {
         $pga_id = filter_input(INPUT_POST, 'startpga', FILTER_SANITIZE_NUMBER_INT);

@@ -18,7 +18,7 @@ if($host_data = get_host_data($id))
   {
     /* Determine if we can change values on this host */
     $privileged = get_privileged_status($host_data);
-  
+
     if ($privileged)
     { 
       $wait = false;
@@ -86,6 +86,14 @@ if($host_data = get_host_data($id))
         $wait = true;
       }
        	
+      if (isset($_POST['flashasc']))
+      {
+      	$asc_id = filter_input(INPUT_POST, 'flashasc', FILTER_SANITIZE_NUMBER_INT);
+      	$arr = array ('command'=>'ascidentify','parameter'=>$asc_id);
+      	$dev_response = send_request_to_host($arr, $host_data);
+        $wait = true;
+      }
+
       if ($wait)
       	sleep(2);
     }

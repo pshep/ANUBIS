@@ -41,7 +41,24 @@ if($host_data = get_host_data($id))
     {
       /* Process POST data - send any changes to host */
       $value_changed = false;
-      
+
+      if ($type == 'ASC')
+      {
+        if (isset($_POST['start']))
+        {
+          $arr = array ('command'=>'ascenable','parameter'=>$dev);
+          $dev_response = send_request_to_host($arr, $host_data);
+          $value_changed = true;
+        }
+  
+        if (isset($_POST['stop']))
+        {
+          $arr = array ('command'=>'ascdisable','parameter'=>$dev);
+          $dev_response = send_request_to_host($arr, $host_data);
+          $value_changed = true;
+        }
+      }
+
       if ($type == 'PGA')
       {
         if (isset($_POST['start']))
