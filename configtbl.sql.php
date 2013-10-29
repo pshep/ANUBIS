@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `configuration` (
 $crr = $dbh->query($tblstr);
 db_error();
 
-$instblstr = "INSERT INTO `configuration` (`yellowtemp`, `yellowrejects`, `yellowdiscards`, `yellowstales`, `yellowgetfails`, `yellowremfails`, `maxtemp`, `maxrejects`, `maxdiscards`, `maxstales`, `maxgetfails`, `maxremfails`, `email`, `yellowfan`, `maxfan`, `yellowgessper`, `maxgessper`, `yellowavgmhper`, `maxavgmhper`, `cointype`) VALUES
+$instblstr = "INSERT INTO `configuration` (`yellowtemp`, `yellowrejects`, `yellowdiscards`, `yellowstales`, `yellowgetfails`, `yellowremfails`, `maxtemp`, `maxrejects`, `maxdiscards`, `maxstales`, `maxgetfails`, `maxremfails`, `email`, `yellowfan`, `maxfan`, `yellowgessper`, `maxgessper`, `yellowavgmhper`, `maxavgmhper`) VALUES
 (80, 1, 30, 7, 1, 1, 84, 2, 40, 10, 2, 2, 'change@me.com', 85, 90, 95, 90, 95, 90);";
 
 $cri = $dbh->exec($instblstr);
