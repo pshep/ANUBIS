@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `configuration` (
   `yellowgessper` int(11) NOT NULL,
   `maxgessper` int(11) NOT NULL,
   `yellowavgmhper` int(11) NOT NULL,
-  `maxavgmhper` int(11) NOT NULL,
+  `maxavgmhper` int(11) NOT NULL
 )".$table_props.";
 ";
 
